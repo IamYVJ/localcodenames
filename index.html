@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Codenames</title>
+  <meta name="description" content="A local, peer-to-peer Codenames game. Host on one device, everyone else joins with a code." />
+
+  <!-- PWA: relative paths so this works from a GitHub Pages subpath -->
+  <link rel="manifest" href="manifest.webmanifest" />
+  <meta name="theme-color" content="#0A0E0D" />
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+
+  <!-- Fonts: Playfair Display (display serif), Space Mono (mono UI), Inter (body).
+       Also precached by the service worker so the offline shell renders right. -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:ital,wght@0,600;0,800;1,600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <!-- Floating network status banner (shared across screens) -->
+  <div id="netbar" class="netbar" hidden>
+    <span class="netbar__dot"></span>
+    <span id="netbar-text" class="netbar__text">Reconnecting…</span>
+    <button id="netbar-retry" class="netbar__retry" hidden>Retry</button>
+  </div>
+
+  <main id="app">
+
+    <!-- ===================== HOME ===================== -->
+    <section id="screen-home" class="screen" data-screen="home">
+      <div class="hero">
+        <p class="eyebrow">&gt; LOCAL · PEER-TO-PEER</p>
+        <h1 class="wordmark">Codenames</h1>
+        <p class="tagline">One device hosts. Everyone else joins with a code. Two spymasters, one board, no servers.</p>
+
+        <label class="field">
+          <span class="field__label">Your name</span>
+          <input id="home-name" class="input" type="text" maxlength="24" autocomplete="off"
+                 placeholder="e.g. ALEX" inputmode="text" />
+        </label>
+
+        <div class="stack">
+          <button id="btn-host" class="btn btn--primary">Host a game</button>
+          <button id="btn-show-join" class="btn btn--ghost">Join a game</button>
+        </div>
+
+        <p id="home-resume" class="resume-note" hidden>
+          <button id="btn-resume" class="linkbtn">Resume your hosted game</button>
+        </p>
+      </div>
+    </section>
+
+    <!-- ===================== JOIN ===================== -->
+    <section id="screen-join" class="screen" data-screen="join" hidden>
+      <div class="card-panel">
+        <p class="eyebrow">&gt; JOIN</p>
+        <h2 class="panel-title">Enter a room</h2>
+
+        <label class="field">
+          <span class="field__label">Room code</span>
+          <input id="join-code" class="input input--code" type="text" maxlength="4"
+                 autocomplete="off" autocapitalize="characters" placeholder="ABCD" />
+        </label>
+        <label class="field">
+          <span class="field__label">Your name</span>
+          <input id="join-name" class="input" type="text" maxlength="24" autocomplete="off" placeholder="e.g. ALEX" />
+        </label>
+
+        <div class="stack">
+          <button id="btn-join" class="btn btn--primary">Connect</button>
+          <button id="btn-join-back" class="btn btn--ghost">Back</button>
+        </div>
+        <p id="join-error" class="error-text" role="alert"></p>
+      </div>
+    </section>
+
+    <!-- ===================== LOBBY ===================== -->
+    <section id="screen-lobby" class="screen" data-screen="lobby" hidden>
+      <header class="lobby-head">
+        <div>
+          <p class="eyebrow">&gt; ROOM</p>
+          <button id="lobby-code" class="roomcode" title="Tap to copy">----</button>
+          <p class="hint">Tap the code to copy &amp; share.</p>
+        </div>
+        <button id="btn-leave-lobby" class="btn btn--ghost btn--sm">Leave</button>
+      </header>
+
+      <div class="teams">
+        <section class="teamcol teamcol--red">
+          <h3 class="teamcol__title"><span class="tag tag--red">RED</span> <span id="head-red" class="teamcol__count"></span></h3>
+          <ul id="roster-red" class="roster"></ul>
+        </section>
+        <section class="teamcol teamcol--blue">
+          <h3 class="teamcol__title"><span class="tag tag--blue">BLUE</span> <span id="head-blue" class="teamcol__count"></span></h3>
+          <ul id="roster-blue" class="roster"></ul>
+        </section>
+      </div>
+
+      <section class="bench">
+        <h3 class="bench__title">Not on a team</h3>
+        <ul id="roster-bench" class="roster roster--bench"></ul>
+      </section>
+
+      <!-- My controls: choose team + role -->
+      <section id="my-controls" class="controls">
+        <p class="controls__label">You</p>
+        <div class="seg" role="group" aria-label="Choose team">
+          <button class="seg__btn" data-team="red">Red</button>
+          <button class="seg__btn" data-team="blue">Blue</button>
+          <button class="seg__btn" data-team="none">Bench</button>
+        </div>
+        <div class="seg" role="group" aria-label="Choose role">
+          <button class="seg__btn" data-role="operative">Operative</button>
+          <button class="seg__btn" data-role="spymaster">Spymaster</button>
+        </div>
+      </section>
+
+      <!-- Host-only controls -->
+      <section id="host-controls" class="controls" hidden>
+        <p id="start-help" class="controls__help"></p>
+        <button id="btn-start" class="btn btn--primary">Start game</button>
+      </section>
+    </section>
+
+    <!-- ===================== GAME ===================== -->
+    <section id="screen-game" class="screen" data-screen="game" hidden>
+      <header class="hud">
+        <div class="hud__scores">
+          <span class="chip chip--red"><span class="chip__dot"></span><span id="count-red">0</span></span>
+          <span class="chip chip--blue"><span class="chip__dot"></span><span id="count-blue">0</span></span>
+        </div>
+        <div id="turn-indicator" class="turn-indicator">
+          <span class="turn-indicator__tag">TURN</span>
+          <span id="turn-team" class="turn-indicator__team">—</span>
+        </div>
+        <button id="btn-leave-game" class="btn btn--ghost btn--sm">Exit</button>
+      </header>
+
+      <div id="clue-bar" class="clue-bar">
+        <span id="clue-text" class="clue-bar__text">Waiting for the first clue…</span>
+        <span id="clue-guesses" class="clue-bar__guesses"></span>
+      </div>
+
+      <!-- The 5x5 grid is built ONCE by render.js and only ever patched. -->
+      <div id="board" class="board" role="grid" aria-label="Word grid"></div>
+
+      <!-- Spymaster clue composer (only the active Spymaster sees this enabled) -->
+      <section id="spymaster-panel" class="panel" hidden>
+        <div class="clue-compose">
+          <input id="clue-word" class="input input--clue" type="text" maxlength="24"
+                 autocomplete="off" placeholder="CLUE WORD" aria-label="Clue word" />
+          <div class="stepper" role="group" aria-label="Clue number">
+            <button id="clue-minus" class="stepper__btn" aria-label="Decrease">−</button>
+            <span id="clue-count" class="stepper__val">1</span>
+            <button id="clue-plus" class="stepper__btn" aria-label="Increase">+</button>
+            <button id="clue-inf" class="stepper__btn stepper__inf" aria-label="Unlimited">∞</button>
+          </div>
+        </div>
+        <button id="btn-clue" class="btn btn--primary">Give clue</button>
+        <p id="clue-warn" class="warn-text" role="alert"></p>
+      </section>
+
+      <!-- Operative actions -->
+      <section id="operative-panel" class="panel" hidden>
+        <button id="btn-end-turn" class="btn btn--secondary">End turn</button>
+        <p class="panel__hint">Tap a card to guess. You get one extra guess beyond the clue number.</p>
+      </section>
+
+      <!-- Passive waiting state -->
+      <section id="waiting-panel" class="panel panel--waiting" hidden>
+        <p id="waiting-text" class="panel__hint">Waiting…</p>
+      </section>
+
+      <!-- Game over overlay -->
+      <div id="gameover" class="overlay" hidden>
+        <div class="overlay__card">
+          <p id="gameover-kicker" class="eyebrow">&gt; GAME OVER</p>
+          <h2 id="winner-banner" class="overlay__title">—</h2>
+          <p id="gameover-sub" class="overlay__sub"></p>
+          <div class="stack" id="gameover-actions" hidden>
+            <button id="btn-again" class="btn btn--primary">Play again</button>
+            <button id="btn-newgame" class="btn btn--ghost">Back to lobby</button>
+          </div>
+          <p id="gameover-wait" class="panel__hint" hidden>Waiting for the host…</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Toasts + screen-reader live region -->
+  <div id="toast" class="toast" hidden></div>
+  <div id="live" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- PeerJS (CDN). Precached by the service worker. NOTE: PeerJS still needs
+       the signaling broker reachable once to set up each WebRTC handshake,
+       even though the app shell itself is cached for offline loading. -->
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+  <script type="module" src="./js/main.js"></script>
+</body>
+</html>
