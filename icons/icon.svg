@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Codenames">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="22%" r="90%">
+      <stop offset="0%" stop-color="#11221c"/>
+      <stop offset="60%" stop-color="#0A0E0D"/>
+      <stop offset="100%" stop-color="#0A0E0D"/>
+    </radialGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <g>
+    <!-- 3x3 evocation of a Codenames board -->
+    <!-- row 1 -->
+    <rect x="120" y="120" width="80" height="64" rx="14" fill="#161d1b" stroke="#2FF0A8" stroke-width="3"/>
+    <rect x="216" y="120" width="80" height="64" rx="14" fill="#E5564E"/>
+    <rect x="312" y="120" width="80" height="64" rx="14" fill="#161d1b" stroke="#2FF0A8" stroke-width="3"/>
+    <!-- row 2 -->
+    <rect x="120" y="200" width="80" height="64" rx="14" fill="#4E8EE5"/>
+    <rect x="216" y="200" width="80" height="64" rx="14" fill="#2FF0A8"/>
+    <rect x="312" y="200" width="80" height="64" rx="14" fill="#161d1b" stroke="#2FF0A8" stroke-width="3"/>
+    <!-- row 3 -->
+    <rect x="120" y="280" width="80" height="64" rx="14" fill="#161d1b" stroke="#2FF0A8" stroke-width="3"/>
+    <rect x="216" y="280" width="80" height="64" rx="14" fill="#C9B98E"/>
+    <rect x="312" y="280" width="80" height="64" rx="14" fill="#05080a" stroke="#2FF0A8" stroke-width="3"/>
+  </g>
+  <text x="256" y="408" text-anchor="middle" font-family="'Space Mono', monospace" font-size="44" font-weight="700" letter-spacing="6" fill="#2FF0A8">CODE</text>
+</svg>
