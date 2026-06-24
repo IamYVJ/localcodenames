@@ -1,0 +1,21 @@
+# Local agent / editor config
+/.claude
+.vscode/
+.idea/
+*.swp
+
+# OS cruft
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Node (only used for tooling: npx serve, gen-icons.mjs)
+node_modules/
+npm-debug.log*
+*.log
+
+# Secrets — never commit these (defensive; none exist today)
+.env
+.env.*
+*.pem
+*.key
