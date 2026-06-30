@@ -10,10 +10,10 @@ const outDir = join(here, '..', 'icons');
 mkdirSync(outDir, { recursive: true });
 
 const COLORS = {
-  bg: [0x0a, 0x0e, 0x0d, 255],
-  glow: [0x11, 0x22, 0x1c, 255],
-  surface: [0x16, 0x1d, 0x1b, 255],
-  mint: [0x2f, 0xf0, 0xa8, 255],
+  bg: [0x0b, 0x0a, 0x0f, 255],
+  glow: [0x1b, 0x14, 0x30, 255],
+  surface: [0x1b, 0x17, 0x26, 255],
+  accent: [0xa9, 0x72, 0xff, 255],
   red: [0xe5, 0x56, 0x4e, 255],
   blue: [0x4e, 0x8e, 0xe5, 255],
   neutral: [0xc9, 0xb9, 0x8e, 255],
@@ -23,7 +23,7 @@ const COLORS = {
 // 3x3 layout mirroring icon.svg.
 const GRID = [
   ['surface', 'red', 'surface'],
-  ['blue', 'mint', 'surface'],
+  ['blue', 'accent', 'surface'],
   ['surface', 'neutral', 'assassin'],
 ];
 
@@ -65,7 +65,7 @@ function makeIcon(size) {
       const w = Math.round(cell), h = Math.round(cell * 0.82);
       const radius = Math.round(cell * 0.16);
       const outline = (name === 'surface' || name === 'assassin');
-      drawRoundRect(set, x0, y0, w, h, radius, fill, outline ? COLORS.mint : null, Math.max(2, Math.round(size * 0.006)));
+      drawRoundRect(set, x0, y0, w, h, radius, fill, outline ? COLORS.accent : null, Math.max(2, Math.round(size * 0.006)));
     }
   }
   return px;

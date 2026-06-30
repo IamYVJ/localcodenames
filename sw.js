@@ -11,7 +11,7 @@
 // each WebRTC handshake. After that, gameplay traffic is direct P2P on the LAN.
 // ===========================================================================
 
-const CACHE = 'codenames-v1';
+const CACHE = 'codenames-v3';
 
 // Local app shell (relative to this worker's location).
 const SHELL = [
@@ -35,7 +35,7 @@ const SHELL = [
 // Cross-origin assets we also want cached (best-effort; never block install).
 const EXTERNAL = [
   'https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js',
-  'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:ital,wght@0,600;0,800;1,600&family=Space+Mono:wght@400;700&display=swap',
+  'https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap',
 ];
 
 const CACHEABLE_HOSTS = new Set([
