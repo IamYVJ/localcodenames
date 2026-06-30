@@ -217,15 +217,21 @@ export class HostNet {
   }
 
   _onHello(conn, msg) {
-    const name = sanitizeName(msg.name);
+    const spectator = !!msg.spectator;
+    // Players must choose a name; a spectator (TV) may stay anonymous.
+    const name = sanitizeName(msg.name) || (spectator ? 'TV' : '');
     if (!name) { safeSend(conn, { t: T.ERR, m: 'A name is required.' }); return; }
 
     let token = msg.token && this.state.seats[msg.token] ? msg.token : null;
+    // Mode must match the seat: never let a spectator bind to a player's seat
+    // (or vice-versa), or a TV could inherit a Spymaster's key entitlement.
+    if (token && !!this.state.seats[token].spectator !== spectator) token = null;
 
-    if (!token) {
-      // No valid token — try to recover a seat by name.
+    if (!token && !spectator) {
+      // No valid token — try to recover a player's seat by name. Spectators are
+      // anonymous, interchangeable, read-only seats and never reclaim by name.
       const byName = Object.values(this.state.seats).find(
-        (s) => s.name.toLowerCase() === name.toLowerCase() && s.token !== this.hostToken,
+        (s) => !s.spectator && s.name.toLowerCase() === name.toLowerCase() && s.token !== this.hostToken,
       );
       if (byName) {
         if (byName.connected) {
@@ -237,8 +243,8 @@ export class HostNet {
     }
 
     if (!token) {
-      // Brand-new player → new seat (host issues the authoritative token).
-      const seat = Rules.makeSeat(this.state, { token: msg.token || Store.uuid(), name });
+      // Brand-new player/spectator → new seat (host issues the authoritative token).
+      const seat = Rules.makeSeat(this.state, { token: msg.token || Store.uuid(), name, spectator });
       token = seat.token;
     } else {
       // Reclaiming: keep team/role/private entitlement; refresh name + status.
@@ -375,13 +381,16 @@ export class HostNet {
 // CLIENT
 // =========================================================================
 export class ClientNet {
-  // opts: { roomCode, token, name,
+  // opts: { roomCode, token, name, spectator,
   //         onView, onWelcome, onStatus, onError, onHostLeft }
   constructor(opts) {
     this.opts = opts;
     this.roomCode = opts.roomCode;
     this.token = opts.token || null;
     this.name = opts.name;
+    // A spectator (TV) is a read-only seat. The host uses this to deny it a
+    // team/role and — critically — to never include the key in its view.
+    this.spectator = !!opts.spectator;
 
     this.peer = null;
     this.conn = null;
@@ -473,7 +482,7 @@ export class ClientNet {
   }
 
   _sendHello() {
-    this.send({ t: T.HELLO, token: this.token, name: this.name, room: this.roomCode });
+    this.send({ t: T.HELLO, token: this.token, name: this.name, room: this.roomCode, spectator: this.spectator });
   }
 
   _onData(msg) {

@@ -107,7 +107,7 @@ body {
 .btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
 .btn--primary { background: var(--accent); color: var(--accent-ink); font-weight: 700; }
-.btn--primary:hover:not(:disabled) { background: #57f5bc; }
+.btn--primary:hover:not(:disabled) { background: #BC8DFF; }
 .btn--secondary { background: var(--surface-2); color: var(--text); border-color: var(--line); }
 .btn--ghost { background: transparent; color: var(--accent); border-color: var(--accent-dim); }
 .btn--ghost:hover { border-color: var(--accent); }
@@ -446,6 +446,59 @@ body {
   max-width: 90vw; text-align: center;
 }
 .toast--show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* =========================================================================
+   TV / SPECTATOR mode
+   A read-only seat (a TV across the room). It shows ONLY public information —
+   the renderer never receives the key while the game is in session — so here
+   we simply make that public view legible from a distance and strip away the
+   interactive chrome (team/role pickers, clue composer, host buttons).
+   ========================================================================= */
+.tv #app {
+  max-width: min(1180px, 96vw);
+  padding: 28px 32px 40px;
+}
+
+/* No player affordances on a TV. */
+.tv #my-controls,
+.tv #host-controls,
+.tv #operative-panel,
+.tv #spymaster-panel,
+.tv #waiting-panel { display: none !important; }
+
+/* Bigger HUD so scores / turn / clue read across a room. */
+.tv .chip { font-size: 1.4rem; padding: 9px 18px; }
+.tv .chip__dot { width: 14px; height: 14px; }
+.tv .turn-indicator { padding: 9px 18px; }
+.tv .turn-indicator__team { font-size: 1.3rem; }
+.tv .clue-bar { min-height: 64px; padding: 16px 22px; }
+.tv .clue-bar__text { font-size: 1.5rem; }
+.tv .clue-bar__guesses { font-size: 1rem; }
+
+/* Bigger board + word type for distance viewing. */
+.tv .board { gap: 12px; margin-bottom: 22px; }
+.tv .card__word { font-size: clamp(1rem, 2.3vw, 1.7rem); }
+.tv .card--assassin-mark .card__mark::before { font-size: clamp(1.8rem, 5vw, 3rem); }
+/* A TV never guesses, so suppress the interactive hover/lift on cards. */
+.tv .card--live { cursor: default; }
+.tv .card--live:hover { transform: none; border-color: var(--line); }
+
+/* Lobby on a TV: emphasise the room code so people can join from the screen. */
+.tv .roomcode { font-size: clamp(2.6rem, 9vw, 4rem); }
+
+/* Game-over: don't black out the screen — the board is fully revealed and
+   should stay visible. Turn the modal into an inline result banner instead. */
+.tv .overlay {
+  position: static; inset: auto; z-index: auto;
+  display: block; padding: 0; margin: 4px 0 0;
+  background: none; backdrop-filter: none;
+}
+.tv .overlay__card {
+  max-width: none; width: 100%;
+  border-color: var(--accent-dim);
+  padding: 20px 24px;
+}
+.tv .overlay__title { font-size: 2.6rem; }
 
 /* --- responsive larger screens ------------------------------------------ */
 @media (min-width: 560px) {

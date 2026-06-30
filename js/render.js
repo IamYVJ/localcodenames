@@ -204,7 +204,10 @@ function patchPanels(prev, next) {
   const op = $('operative-panel');
   const wait = $('waiting-panel');
 
-  if (!playing || !ng || !you) {
+  if (you && you.spectator) {
+    // A TV is purely read-only: it never composes clues, guesses, or waits.
+    hide(sm); hide(op); hide(wait);
+  } else if (!playing || !ng || !you) {
     hide(sm); hide(op); hide(wait);
   } else {
     const yourTurn = ng.turn === you.team;
@@ -262,10 +265,14 @@ function patchGameOver(prev, next) {
     : `All ${cap(winner)} agents have been found.`;
   setText('gameover-sub', sub);
 
-  // Host sees Play Again / Back to lobby; others wait.
+  // Host sees Play Again / Back to lobby; players wait. A spectator (TV) can do
+  // neither — it just displays the result, so hide both control rows (and the
+  // .tv CSS turns this overlay into a banner so the revealed board stays
+  // visible behind it).
+  const spectator = next.you && next.you.spectator;
   const isHost = next.you && next.you.isHost;
-  toggle($('gameover-actions'), !!isHost);
-  toggle($('gameover-wait'), !isHost);
+  toggle($('gameover-actions'), !spectator && !!isHost);
+  toggle($('gameover-wait'), !spectator && !isHost);
 }
 
 // =========================================================================

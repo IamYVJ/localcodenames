@@ -22,6 +22,7 @@ const app = {
   view: null,
   screen: null, // currently shown screen (so we only switch when it changes)
   clueCount: 1, // local stepper value: integer | UNLIMITED
+  spectator: false, // joining as a read-only TV?
 };
 
 // =========================================================================
@@ -85,11 +86,8 @@ function wireHome() {
     startHosting(randomRoomCode(), false, name);
   });
 
-  $('btn-show-join').addEventListener('click', () => {
-    if (!$('join-name').value) $('join-name').value = $('home-name').value.trim();
-    UI.showScreen('join'); app.screen = 'join';
-    $('join-code').focus();
-  });
+  $('btn-show-join').addEventListener('click', () => openJoin(false));
+  $('btn-show-tv').addEventListener('click', () => openJoin(true));
 
   $('btn-resume').addEventListener('click', () => {
     const room = Store.getLastHostRoom();
@@ -140,6 +138,29 @@ function setLobbyCode(code) {
 // =========================================================================
 // JOIN (client)
 // =========================================================================
+
+// Open the join screen in either player mode or read-only TV/spectator mode.
+// TV mode hides the name field (a TV is anonymous) and relabels the screen.
+function openJoin(spectator) {
+  app.spectator = !!spectator;
+  const nameField = $('join-name-field');
+  const title = $('join-title');
+  const connect = $('btn-join');
+  if (spectator) {
+    nameField.hidden = true;
+    title.textContent = 'Watch on this TV';
+    connect.textContent = 'Connect TV';
+  } else {
+    nameField.hidden = false;
+    title.textContent = 'Enter a room';
+    connect.textContent = 'Connect';
+    if (!$('join-name').value) $('join-name').value = $('home-name').value.trim();
+  }
+  $('join-error').textContent = '';
+  UI.showScreen('join'); app.screen = 'join';
+  $('join-code').focus();
+}
+
 function wireJoin() {
   const codeInput = $('join-code');
   codeInput.addEventListener('input', () => {
@@ -155,29 +176,34 @@ function wireJoin() {
 
 function joinGame() {
   const code = $('join-code').value.trim().toUpperCase();
-  const name = $('join-name').value.trim();
+  const spectator = !!app.spectator;
+  // A TV is anonymous (its name field is hidden); players must name themselves.
+  const name = spectator ? 'TV' : $('join-name').value.trim();
   const err = $('join-error');
   err.textContent = '';
 
   if (code.length !== 4) { err.textContent = 'Room code is 4 characters.'; return; }
-  if (!name) { err.textContent = 'Enter your name.'; return; }
-  Store.setName(name);
+  if (!spectator && !name) { err.textContent = 'Enter your name.'; return; }
+  if (!spectator) Store.setName(name);
 
   teardownNet();
   app.mode = 'client';
   app.roomCode = code;
 
-  // Auto-reclaim: if we have a stored token for this room, present it.
-  const seat = Store.getSeat(code);
+  // Players auto-reclaim their seat by token; a TV is always a fresh, read-only
+  // seat and must never present (or persist over) a player's stored token.
+  const seat = spectator ? null : Store.getSeat(code);
 
   app.client = new ClientNet({
     roomCode: code,
     token: seat?.token,
     name,
+    spectator,
     onView: handleView,
     onWelcome: (msg) => {
-      // Persist our authoritative identity so reloads/reconnects restore us.
-      Store.setSeat(code, { token: msg.token, name });
+      // Only players persist identity; a TV must never clobber the player seat
+      // token stored for this room on the same device.
+      if (!spectator) Store.setSeat(code, { token: msg.token, name });
     },
     onStatus: (s) => UI.setNetStatus(s),
     onError: (m) => {
@@ -207,6 +233,10 @@ function joinGame() {
 // =========================================================================
 function handleView(view) {
   app.view = view;
+
+  // A spectator's view is read-only; the `tv` body class drives the CSS that
+  // hides player controls and enlarges the board for across-the-room viewing.
+  document.body.classList.toggle('tv', !!(view.you && view.you.spectator));
 
   const target = view.phase === 'lobby' ? 'lobby' : 'game';
 
@@ -370,6 +400,8 @@ function teardownNet() {
   app.client = null;
   app.mode = null;
   app.view = null;
+  app.spectator = false;
+  document.body.classList.remove('tv');
   View.resetRenderState();
 }
 

@@ -44,14 +44,18 @@ export function createInitialState(roomCode, hostSeatId) {
   };
 }
 
-export function makeSeat(state, { token, name }) {
+export function makeSeat(state, { token, name, spectator = false }) {
   const seatId = `p${state.nextSeat++}`;
   const seat = {
     token,
     seatId,
     name,
+    // A spectator (e.g. a TV) is a read-only seat: never on a team, never a
+    // player. The 'spectator' role is what structurally bars it from ever
+    // receiving the hidden key in viewFor() while the game is in session.
     team: null, // 'red' | 'blue' | null (unassigned)
-    role: 'operative', // 'spymaster' | 'operative'
+    role: spectator ? 'spectator' : 'operative', // 'spymaster' | 'operative' | 'spectator'
+    spectator: !!spectator,
     connected: true,
     lastSeen: Date.now(),
   };
@@ -102,6 +106,7 @@ export function teamComposition(state) {
     unassigned: 0,
   };
   for (const seat of Object.values(state.seats)) {
+    if (seat.spectator) continue; // spectators are not players
     if (seat.team !== 'red' && seat.team !== 'blue') { out.unassigned++; continue; }
     if (seat.role === 'spymaster') out[seat.team].spymasters++;
     else out[seat.team].operatives++;
@@ -128,6 +133,7 @@ export function canStart(state) {
 export function setTeam(state, token, team) {
   const seat = state.seats[token];
   if (!seat) return { ok: false, error: 'No such seat.' };
+  if (seat.spectator) return { ok: false, error: 'Spectators cannot join a team.' };
   if (state.phase !== 'lobby') return { ok: false, error: 'Teams are locked once the game starts.' };
   if (team !== 'red' && team !== 'blue' && team !== null) return { ok: false, error: 'Bad team.' };
   seat.team = team;
@@ -139,6 +145,7 @@ export function setTeam(state, token, team) {
 export function setRole(state, token, role) {
   const seat = state.seats[token];
   if (!seat) return { ok: false, error: 'No such seat.' };
+  if (seat.spectator) return { ok: false, error: 'Spectators cannot take a role.' };
   if (state.phase !== 'lobby') return { ok: false, error: 'Roles are locked once the game starts.' };
   if (role !== 'spymaster' && role !== 'operative') return { ok: false, error: 'Bad role.' };
   if (role === 'spymaster') {
@@ -316,16 +323,28 @@ export function newGame(state) {
 
 // --- views (what each recipient is allowed to see) -----------------------
 
-// Roster without secrets (no tokens).
+// Roster without secrets (no tokens). Spectators (TVs) are read-only viewers,
+// not players, so they are omitted from the team/bench roster entirely.
 function publicRoster(state) {
-  return Object.values(state.seats).map((s) => ({
-    seatId: s.seatId,
-    name: s.name,
-    team: s.team,
-    role: s.role,
-    connected: s.connected,
-    isHost: s.seatId === state.hostSeatId,
-  }));
+  return Object.values(state.seats)
+    .filter((s) => !s.spectator)
+    .map((s) => ({
+      seatId: s.seatId,
+      name: s.name,
+      team: s.team,
+      role: s.role,
+      connected: s.connected,
+      isHost: s.seatId === state.hostSeatId,
+    }));
+}
+
+// How many spectators (TVs) are currently connected — a public, harmless count.
+function spectatorCount(state) {
+  let n = 0;
+  for (const s of Object.values(state.seats)) {
+    if (s.spectator && s.connected) n++;
+  }
+  return n;
 }
 
 // Public game projection. Card colors are exposed ONLY for revealed cards
@@ -363,6 +382,7 @@ export function viewFor(state, token) {
     roomCode: state.roomCode,
     hostSeatId: state.hostSeatId,
     roster: publicRoster(state),
+    spectators: spectatorCount(state),
     game: publicGame(state),
     composition: teamComposition(state),
     canStart: canStart(state),
@@ -371,10 +391,14 @@ export function viewFor(state, token) {
       name: seat.name,
       team: seat.team,
       role: seat.role,
+      spectator: !!seat.spectator,
       connected: seat.connected,
       isHost: seat.seatId === state.hostSeatId,
     } : null,
   };
+  // The hidden key is attached ONLY for a Spymaster mid-game. A spectator's
+  // role is never 'spymaster', so this branch can never include the key for a
+  // TV — the privacy guarantee is structural, not cosmetic.
   if (seat && seat.role === 'spymaster' && state.game && state.phase === 'playing') {
     view.key = state.game.key.slice(); // entitled private view
   }

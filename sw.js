@@ -11,7 +11,7 @@
 // each WebRTC handshake. After that, gameplay traffic is direct P2P on the LAN.
 // ===========================================================================
 
-const CACHE = 'codenames-v3';
+const CACHE = 'codenames-v4';
 
 // Local app shell (relative to this worker's location).
 const SHELL = [

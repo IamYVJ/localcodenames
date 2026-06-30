@@ -46,6 +46,7 @@
         <div class="stack">
           <button id="btn-host" class="btn btn--primary">Host a game</button>
           <button id="btn-show-join" class="btn btn--ghost">Join a game</button>
+          <button id="btn-show-tv" class="btn btn--ghost">Watch on a TV</button>
         </div>
 
         <p id="home-resume" class="resume-note" hidden>
@@ -58,14 +59,14 @@
     <section id="screen-join" class="screen" data-screen="join" hidden>
       <div class="card-panel">
         <p class="eyebrow">&gt; JOIN</p>
-        <h2 class="panel-title">Enter a room</h2>
+        <h2 id="join-title" class="panel-title">Enter a room</h2>
 
         <label class="field">
           <span class="field__label">Room code</span>
           <input id="join-code" class="input input--code" type="text" maxlength="4"
                  autocomplete="off" autocapitalize="characters" placeholder="ABCD" />
         </label>
-        <label class="field">
+        <label id="join-name-field" class="field">
           <span class="field__label">Your name</span>
           <input id="join-name" class="input" type="text" maxlength="24" autocomplete="off" placeholder="e.g. ALEX" />
         </label>
