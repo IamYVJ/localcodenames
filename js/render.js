@@ -116,6 +116,8 @@ export function applyState(prev, next) {
     const word = ng.words[i];
     if (!pg || pg.words[i] !== word) {
       node.firstChild.textContent = word;
+      // Drives the one-line fit in CSS — see .card__word.
+      node.style.setProperty('--len', String(word.length));
     }
 
     // Display color: known once the card is revealed (or at game over).

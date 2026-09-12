@@ -351,8 +351,11 @@ body {
   transition: background-color .35s ease, color .35s ease, border-color .35s ease, transform .12s ease;
 }
 .card__word {
+  /* --cap is the largest the type may get; the media query and .tv rules below
+     only ever change that, so both sizing paths here stay in sync. */
+  --cap: 0.92rem;
   font-family: var(--mono);
-  font-size: clamp(0.5rem, 2.7vw, 0.92rem);
+  font-size: clamp(0.5rem, 2.7vw, var(--cap));
   font-weight: 700;
   letter-spacing: 0.02em;
   text-transform: uppercase;
@@ -360,6 +363,20 @@ body {
   word-break: break-word;
   hyphens: auto;
   z-index: 1;
+}
+
+/* A word must never wrap onto a second line, so shrink the type until the
+   longest one fits across its card. Space Mono advances 0.632em per character
+   (letter-spacing included) — 0.64 adds a hair of rounding slack. --len is the
+   word's character count, set per card by render.js.
+   Without container query support this block is skipped entirely and the
+   clamp() above still wraps, which beats clipping. */
+@supports (container-type: inline-size) {
+  .card { container-type: inline-size; }
+  .card__word {
+    white-space: nowrap;
+    font-size: min(var(--cap), calc(100cqw / (var(--len, 6) * 0.64)));
+  }
 }
 .card__mark { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
 
@@ -552,9 +569,9 @@ body {
   margin-bottom: 0;
 }
 .tv .card { aspect-ratio: auto; min-width: 0; }
-/* Card size is driven by leftover HEIGHT now, so the type tracks vh — scaling
-   these off vw would oversize the words on a short (720p) screen. */
-.tv .card__word { font-size: clamp(0.85rem, 2.6vh, 1.7rem); }
+/* Only the ceiling changes here — the fit formula on .card__word already
+   tracks the card, which is itself driven by leftover height. */
+.tv .card__word { --cap: 1.7rem; }
 .tv .card--assassin-mark .card__mark::before { font-size: clamp(1.4rem, 5vh, 3rem); }
 /* A TV never guesses, so suppress the interactive hover/lift on cards. */
 .tv .card--live { cursor: default; }
@@ -600,7 +617,7 @@ body {
 
 /* --- responsive larger screens ------------------------------------------ */
 @media (min-width: 560px) {
-  .card__word { font-size: clamp(0.8rem, 2vw, 1rem); }
+  .card__word { --cap: 1rem; }
   .board { gap: 9px; }
 }
 
