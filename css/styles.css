@@ -312,6 +312,8 @@ body {
   background: var(--surface); border: 1px solid var(--line);
   border-radius: var(--radius); padding: 12px 16px; margin-bottom: 14px;
   min-height: 50px;
+  /* Anchors the progress bar, and clips it to the rounded corners. */
+  position: relative; overflow: hidden;
 }
 .clue-bar__text {
   /* Grows so the guess count and the clock stay grouped on the right. */
@@ -327,6 +329,24 @@ body {
 .clue-bar__timer--urgent { color: var(--red); }
 /* Held before the first turn: full dial, visibly not running. */
 .clue-bar__timer--held { color: var(--muted-2); }
+
+/* Countdown bar along the bottom edge. render.js sets scaleX on the fill every
+   tick; the transition is a touch longer than the 250ms tick so the steps glide
+   into one another instead of stuttering. */
+.clue-bar__progress {
+  position: absolute; left: 0; right: 0; bottom: 0; height: 3px;
+  background: var(--line);
+}
+.clue-bar__progress-fill {
+  height: 100%;
+  background: var(--accent);
+  /* Time runs out toward the left, so the fill's right edge is the one moving. */
+  transform-origin: left center;
+  transform: scaleX(1);
+  transition: transform 260ms linear, background-color .35s ease;
+}
+.clue-bar__progress-fill--urgent { background: var(--red); }
+.clue-bar__progress-fill--held { background: var(--muted-2); }
 
 /* --- the board ----------------------------------------------------------- */
 .board {
@@ -551,6 +571,7 @@ body {
 .tv .clue-bar__text { font-size: 1.5rem; }
 .tv .clue-bar__guesses { font-size: 1rem; }
 .tv .clue-bar__timer { font-size: 1.6rem; }
+.tv .clue-bar__progress { height: 5px; }
 
 /* Bigger board + word type for distance viewing.
    The board takes all the leftover height and derives its WIDTH from the 5x5

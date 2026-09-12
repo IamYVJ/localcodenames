@@ -163,6 +163,11 @@
         <span id="clue-text" class="clue-bar__text">Waiting for the first clue…</span>
         <span id="clue-guesses" class="clue-bar__guesses"></span>
         <span id="clue-timer" class="clue-bar__timer" hidden></span>
+        <!-- Decorative twin of the digits: the fill recedes right-to-left as the
+             turn clock drains. Out of flow, so it never shifts the row. -->
+        <div id="clue-progress" class="clue-bar__progress" hidden aria-hidden="true">
+          <div id="clue-progress-fill" class="clue-bar__progress-fill"></div>
+        </div>
       </div>
 
       <!-- Host-only: holds the opening clock so the first Spymaster isn't

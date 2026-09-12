@@ -205,13 +205,16 @@ function patchHud(prev, next) {
 // on expiry — this is display only.
 // =========================================================================
 let timerAnchor = null;
+let timerTotal = 0;
 let timerTick = null;
 
 function patchTimer(next) {
   const t = next.phase === 'playing' && next.game ? next.game.timer : null;
   const el = $('clue-timer');
-  if (!t) { stopTimerTick(); hide(el); return; }
+  const bar = $('clue-progress');
+  if (!t) { stopTimerTick(); hide(el); hide(bar); return; }
   show(el);
+  show(bar);
 
   // Held by the host: show the full dial frozen, so the room can see what the
   // first Spymaster is about to get without it already draining.
@@ -220,10 +223,12 @@ function patchTimer(next) {
     paintClock(t.totalMs);
     el.classList.remove('clue-bar__timer--urgent');
     el.classList.add('clue-bar__timer--held');
+    paintBar(1, false, true);
     return;
   }
 
   el.classList.remove('clue-bar__timer--held');
+  timerTotal = t.totalMs;
   timerAnchor = performance.now() + t.remainingMs;
   paintTimer();
   if (!timerTick) timerTick = setInterval(paintTimer, 250);
@@ -234,7 +239,9 @@ function paintTimer() {
   if (!el || timerAnchor == null) return;
   const left = Math.max(0, timerAnchor - performance.now());
   paintClock(left);
-  el.classList.toggle('clue-bar__timer--urgent', left <= 10000);
+  const urgent = left <= 10000;
+  el.classList.toggle('clue-bar__timer--urgent', urgent);
+  paintBar(timerTotal > 0 ? left / timerTotal : 0, urgent, false);
 }
 
 function paintClock(ms) {
@@ -242,9 +249,18 @@ function paintClock(ms) {
   setText('clue-timer', `${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, '0')}`);
 }
 
+function paintBar(frac, urgent, held) {
+  const fill = $('clue-progress-fill');
+  if (!fill) return;
+  fill.style.transform = `scaleX(${Math.min(1, Math.max(0, frac))})`;
+  fill.classList.toggle('clue-bar__progress-fill--urgent', urgent);
+  fill.classList.toggle('clue-bar__progress-fill--held', held);
+}
+
 function stopTimerTick() {
   if (timerTick) { clearInterval(timerTick); timerTick = null; }
   timerAnchor = null;
+  timerTotal = 0;
 }
 
 // =========================================================================
