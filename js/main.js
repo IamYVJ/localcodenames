@@ -135,6 +135,14 @@ function setLobbyCode(code) {
   $('lobby-code').textContent = code;
 }
 
+// Guarded: this runs on every in-game state update, and the renderer's contract
+// is to never touch DOM that hasn't actually changed.
+function setGameCode(code) {
+  const el = $('game-code');
+  const text = code || '----';
+  if (el.textContent !== text) el.textContent = text;
+}
+
 // =========================================================================
 // JOIN (client)
 // =========================================================================
@@ -251,6 +259,8 @@ function handleView(view) {
   if (target === 'lobby') {
     setLobbyCode(view.roomCode);
     View.renderRoster(view);
+  } else {
+    setGameCode(view.roomCode);
   }
 
   // Board + HUD + panels + game-over overlay, coalesced into one frame.
@@ -322,6 +332,12 @@ function wireGame() {
 
   $('btn-again').addEventListener('click', () => app.host?.playAgain());
   $('btn-newgame').addEventListener('click', () => app.host?.newGame());
+
+  $('game-code').addEventListener('click', async () => {
+    const code = $('game-code').textContent;
+    const ok = await UI.copyText(code);
+    UI.toast(ok ? 'Room code copied' : code);
+  });
 
   $('btn-leave-game').addEventListener('click', leaveRoom);
 }

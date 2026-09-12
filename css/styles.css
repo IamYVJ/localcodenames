@@ -398,6 +398,24 @@ body {
 .stepper__inf { color: var(--muted); }
 .stepper__inf--on { background: var(--accent); color: var(--accent-ink); }
 
+/* --- room code during play ------------------------------------------------ */
+.gamecode {
+  display: flex; align-items: baseline; justify-content: center; gap: 10px;
+  margin: 16px 0 0;
+}
+.gamecode__label {
+  font-family: var(--mono); font-size: 0.68rem;
+  letter-spacing: 0.18em; color: var(--muted-2);
+}
+.gamecode__value {
+  font-family: var(--mono); font-weight: 700;
+  font-size: 0.95rem; letter-spacing: 0.22em;
+  color: var(--muted);
+  background: none; border: none; padding: 0; cursor: pointer;
+}
+.gamecode__value:hover { color: var(--accent); }
+.gamecode__value:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+
 /* --- game over overlay --------------------------------------------------- */
 .overlay {
   position: fixed; inset: 0; z-index: 40;
@@ -485,6 +503,15 @@ body {
 
 /* Lobby on a TV: emphasise the room code so people can join from the screen. */
 .tv .roomcode { font-size: clamp(2.6rem, 9vw, 4rem); }
+
+/* The room code belongs at the TOP on a TV so people can join from across the
+   room. Flex ordering hoists it without moving it in the DOM, where it sits
+   last — which is where players want it. */
+.tv #screen-game { display: flex; flex-direction: column; }
+.tv .gamecode { order: -1; margin: 0 0 14px; gap: 14px; }
+.tv .gamecode__label { font-size: 1rem; }
+.tv .gamecode__value { font-size: 1.8rem; color: var(--accent); cursor: default; }
+.tv .gamecode__value:hover { color: var(--accent); }
 
 /* Game-over: don't black out the screen — the board is fully revealed and
    should stay visible. Turn the modal into an inline result banner instead. */

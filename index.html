@@ -176,6 +176,13 @@
         <p id="waiting-text" class="panel__hint">Waiting…</p>
       </section>
 
+      <!-- Room code, so latecomers and TVs can still join mid-game. Sits last in
+           the DOM for players; the .tv rules hoist it above the HUD. -->
+      <p class="gamecode">
+        <span class="gamecode__label">ROOM</span>
+        <button id="game-code" class="gamecode__value" title="Tap to copy">----</button>
+      </p>
+
       <!-- Game over overlay -->
       <div id="gameover" class="overlay" hidden>
         <div class="overlay__card">
