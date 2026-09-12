@@ -52,6 +52,7 @@ const T = {
   ADMIN_SET_TEAM: 'adminSetTeam',
   ADMIN_SET_ROLE: 'adminSetRole',
   SET_TIMER: 'setTimer',
+  START_CLOCK: 'startClock',
 };
 
 // =========================================================================
@@ -285,7 +286,7 @@ export class HostNet {
     // Remote clients may never invoke host-only controls.
     if (msg.t === T.START || msg.t === T.AGAIN || msg.t === T.NEW_GAME
         || msg.t === T.ADMIN_SET_TEAM || msg.t === T.ADMIN_SET_ROLE
-        || msg.t === T.SET_TIMER) {
+        || msg.t === T.SET_TIMER || msg.t === T.START_CLOCK) {
       safeSend(conn, { t: T.ERR, m: 'Only the host can do that.' });
       return;
     }
@@ -304,6 +305,7 @@ export class HostNet {
       case T.GUESS: res = Rules.guess(this.state, token, msg.index); break;
       case T.END_TURN: res = Rules.endTurn(this.state, token); break;
       case T.SET_TIMER: res = Rules.setTimerConfig(this.state, msg.patch); break;
+      case T.START_CLOCK: res = Rules.startClock(this.state); break;
       default: return { ok: false, error: 'Unknown action.' };
     }
     if (res.ok) {
@@ -321,6 +323,7 @@ export class HostNet {
   localGuess(index) { return this._apply(this.hostToken, { t: T.GUESS, index }); }
   localEndTurn() { return this._apply(this.hostToken, { t: T.END_TURN }); }
   localSetTimer(patch) { return this._apply(this.hostToken, { t: T.SET_TIMER, patch }); }
+  localStartClock() { return this._apply(this.hostToken, { t: T.START_CLOCK }); }
 
   // host-only admin moves (assign any seat from the lobby)
   adminSetTeam(seatId, team) {

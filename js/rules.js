@@ -105,9 +105,13 @@ export function dealGame(state) {
     lastEvent: `Game on. ${cap(startingTeam)} team goes first.`,
     // Host-side absolute epoch ms. Never sent on the wire — see timerView().
     deadlineAt: null,
+    // The opening clock is held until the host releases it. Without this the
+    // first Spymaster is already losing time while the room is still reading
+    // the board for the first time — see startClock().
+    clockPending: false,
   };
   state.phase = 'playing';
-  armClock(state);
+  state.game.clockPending = !!state.timer.enabled;
   return state;
 }
 
@@ -128,13 +132,26 @@ export function turnClockMs(state) {
 
 function armClock(state) {
   const ms = turnClockMs(state);
+  state.game.clockPending = false;
   state.game.deadlineAt = ms == null ? null : Date.now() + ms;
+}
+
+// Host-only: release the opening clock once the room has had a look at the
+// board. Every later turn arms itself, so this applies to the first turn only.
+export function startClock(state) {
+  const game = state.game;
+  if (state.phase !== 'playing' || !game) return { ok: false, error: 'No active game.' };
+  if (!game.clockPending) return { ok: false, error: 'The clock is already running.' };
+  armClock(state);
+  return { ok: true };
 }
 
 // Re-arm from now. Used when the host resumes a persisted game, where the
 // stored deadline belongs to a session that may have ended hours ago.
 export function restartTurnClock(state) {
   if (state.phase !== 'playing' || !state.game) return;
+  // A game resumed before the opening clock was released stays held.
+  if (state.game.clockPending) return;
   armClock(state);
 }
 
@@ -431,11 +448,17 @@ function spectatorCount(state) {
 // Anchoring on the recipient's own clock is what makes this immune to skew.
 function timerView(state) {
   const g = state.game;
-  if (!g || g.deadlineAt == null) return null;
+  const total = turnClockMs(state);
+  if (total == null) return null;
+  // Held: report a full, static dial so everyone can see what they're about to
+  // be given without it already draining.
+  if (g.clockPending) return { phase: 'clue', pending: true, remainingMs: total, totalMs: total };
+  if (g.deadlineAt == null) return null;
   return {
     phase: g.clue ? 'guess' : 'clue',
+    pending: false,
     remainingMs: Math.max(0, g.deadlineAt - Date.now()),
-    totalMs: turnClockMs(state),
+    totalMs: total,
   };
 }
 

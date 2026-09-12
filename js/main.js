@@ -342,6 +342,11 @@ function wireGame() {
     else app.client?.endTurn();
   });
 
+  $('btn-start-clock').addEventListener('click', () => {
+    const r = app.host?.localStartClock();
+    if (r && !r.ok) UI.toast(r.error);
+  });
+
   $('btn-again').addEventListener('click', () => app.host?.playAgain());
   $('btn-newgame').addEventListener('click', () => app.host?.newGame());
 

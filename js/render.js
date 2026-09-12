@@ -180,9 +180,10 @@ function patchHud(prev, next) {
   }
 
   // Clue + remaining guesses.
+  const held = !!(ng.timer && ng.timer.pending);
   const clueText = ng.clue
     ? `${ng.clue.word.toUpperCase()} · ${ng.clue.count === UNLIMITED ? '∞' : ng.clue.count}`
-    : 'Waiting for a clue…';
+    : (held ? 'Read the board — clock is paused.' : 'Waiting for a clue…');
   setText('clue-text', clueText);
 
   let guessText = '';
@@ -208,9 +209,20 @@ function patchTimer(next) {
   const t = next.phase === 'playing' && next.game ? next.game.timer : null;
   const el = $('clue-timer');
   if (!t) { stopTimerTick(); hide(el); return; }
-
-  timerAnchor = performance.now() + t.remainingMs;
   show(el);
+
+  // Held by the host: show the full dial frozen, so the room can see what the
+  // first Spymaster is about to get without it already draining.
+  if (t.pending) {
+    stopTimerTick();
+    paintClock(t.totalMs);
+    el.classList.remove('clue-bar__timer--urgent');
+    el.classList.add('clue-bar__timer--held');
+    return;
+  }
+
+  el.classList.remove('clue-bar__timer--held');
+  timerAnchor = performance.now() + t.remainingMs;
   paintTimer();
   if (!timerTick) timerTick = setInterval(paintTimer, 250);
 }
@@ -219,9 +231,13 @@ function paintTimer() {
   const el = $('clue-timer');
   if (!el || timerAnchor == null) return;
   const left = Math.max(0, timerAnchor - performance.now());
-  const secs = Math.ceil(left / 1000);
-  setText('clue-timer', `${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, '0')}`);
+  paintClock(left);
   el.classList.toggle('clue-bar__timer--urgent', left <= 10000);
+}
+
+function paintClock(ms) {
+  const secs = Math.ceil(ms / 1000);
+  setText('clue-timer', `${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, '0')}`);
 }
 
 function stopTimerTick() {
@@ -266,6 +282,11 @@ function patchPanels(prev, next) {
       hide(wait);
     }
   }
+
+  // Host-only gate on the opening clock. A TV is never the host, but guard
+  // anyway so a spectator can never be shown a control.
+  const held = playing && ng && ng.timer && ng.timer.pending;
+  toggle($('clock-gate'), !!(held && you && you.isHost && !you.spectator));
 
   // aria-live announcement when the narrative event changes.
   if (ng && (!prev || !prev.game || prev.game.lastEvent !== ng.lastEvent)) {

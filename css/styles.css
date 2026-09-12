@@ -325,6 +325,8 @@ body {
   color: var(--muted); white-space: nowrap;
 }
 .clue-bar__timer--urgent { color: var(--red); }
+/* Held before the first turn: full dial, visibly not running. */
+.clue-bar__timer--held { color: var(--muted-2); }
 
 /* --- the board ----------------------------------------------------------- */
 .board {
@@ -397,6 +399,16 @@ body {
 }
 .panel--waiting { text-align: center; }
 .panel__hint { color: var(--muted); font-size: 0.84rem; margin: 10px 0 0; text-align: center; }
+
+/* Host-only gate on the opening clock. Sits above the board, where the host is
+   already looking, rather than down with the turn panels. */
+.clock-gate {
+  background: var(--surface); border: 1px solid var(--accent-dim);
+  border-radius: var(--radius); padding: 14px;
+  margin-bottom: 14px; text-align: center;
+}
+.clock-gate__hint { color: var(--muted); font-size: 0.84rem; margin: 0 0 10px; }
+.clock-gate .btn { width: 100%; }
 
 .clue-compose { display: flex; gap: 10px; margin-bottom: 12px; }
 .clue-compose .input--clue { flex: 1; }
@@ -510,7 +522,8 @@ body {
 .tv #host-controls,
 .tv #operative-panel,
 .tv #spymaster-panel,
-.tv #waiting-panel { display: none !important; }
+.tv #waiting-panel,
+.tv #clock-gate { display: none !important; }
 
 /* Bigger HUD so scores / turn / clue read across a room. */
 .tv .chip { font-size: 1.4rem; padding: 9px 18px; }

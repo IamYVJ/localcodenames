@@ -165,6 +165,13 @@
         <span id="clue-timer" class="clue-bar__timer" hidden></span>
       </div>
 
+      <!-- Host-only: holds the opening clock so the first Spymaster isn't
+           already losing time while the room reads the board. -->
+      <section id="clock-gate" class="clock-gate" hidden>
+        <p class="clock-gate__hint">Let everyone read the board. The first Spymaster's clock starts when you tap this.</p>
+        <button id="btn-start-clock" class="btn btn--primary">Start the clock</button>
+      </section>
+
       <!-- The 5x5 grid is built ONCE by render.js and only ever patched. -->
       <div id="board" class="board" role="grid" aria-label="Word grid"></div>
 
