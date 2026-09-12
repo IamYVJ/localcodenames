@@ -490,9 +490,19 @@ body {
    we simply make that public view legible from a distance and strip away the
    interactive chrome (team/role pickers, clue composer, host buttons).
    ========================================================================= */
+/* Nobody can scroll a TV, so the whole UI has to fit the screen. The body is
+   pinned to the viewport and #app becomes a column; the board (below) is the
+   one flexible row, absorbing whatever height the fixed chrome leaves. */
+.tv {
+  height: 100dvh;
+  overflow: hidden;
+}
 .tv #app {
   max-width: min(1180px, 96vw);
-  padding: 28px 32px 40px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 22px 32px 24px;
 }
 
 /* No player affordances on a TV. */
@@ -512,10 +522,27 @@ body {
 .tv .clue-bar__guesses { font-size: 1rem; }
 .tv .clue-bar__timer { font-size: 1.6rem; }
 
-/* Bigger board + word type for distance viewing. */
-.tv .board { gap: 12px; margin-bottom: 22px; }
-.tv .card__word { font-size: clamp(1rem, 2.3vw, 1.7rem); }
-.tv .card--assassin-mark .card__mark::before { font-size: clamp(1.8rem, 5vw, 3rem); }
+/* Bigger board + word type for distance viewing.
+   The board takes all the leftover height and derives its WIDTH from the 5x5
+   card ratio, so it stays proportioned instead of stretching into letterboxes.
+   That means the cards can no longer size themselves — hence aspect-ratio: auto
+   on .tv .card, with explicit grid rows doing the work instead. */
+.tv .board {
+  flex: 1 1 0;
+  min-height: 0;
+  align-self: center;
+  width: auto;
+  max-width: 100%;
+  aspect-ratio: 5 / 4.1;
+  grid-template-rows: repeat(5, 1fr);
+  gap: 12px;
+  margin-bottom: 0;
+}
+.tv .card { aspect-ratio: auto; min-width: 0; }
+/* Card size is driven by leftover HEIGHT now, so the type tracks vh — scaling
+   these off vw would oversize the words on a short (720p) screen. */
+.tv .card__word { font-size: clamp(0.85rem, 2.6vh, 1.7rem); }
+.tv .card--assassin-mark .card__mark::before { font-size: clamp(1.4rem, 5vh, 3rem); }
 /* A TV never guesses, so suppress the interactive hover/lift on cards. */
 .tv .card--live { cursor: default; }
 .tv .card--live:hover { transform: none; border-color: var(--line); }
@@ -523,10 +550,18 @@ body {
 /* Lobby on a TV: emphasise the room code so people can join from the screen. */
 .tv .roomcode { font-size: clamp(2.6rem, 9vw, 4rem); }
 
+/* Each screen becomes the column that fills #app, so its own children can flex. */
+.tv #screen-game,
+.tv #screen-lobby {
+  flex: 1 1 auto; min-height: 0;
+  display: flex; flex-direction: column;
+}
+/* A big roster can still outgrow the screen — scroll the lobby, not the page. */
+.tv #screen-lobby { overflow-y: auto; }
+
 /* The room code belongs at the TOP on a TV so people can join from across the
    room. Flex ordering hoists it without moving it in the DOM, where it sits
    last — which is where players want it. */
-.tv #screen-game { display: flex; flex-direction: column; }
 .tv .gamecode { order: -1; margin: 0 0 14px; gap: 14px; }
 .tv .gamecode__label { font-size: 1rem; }
 .tv .gamecode__value { font-size: 1.8rem; color: var(--accent); cursor: default; }
@@ -542,9 +577,13 @@ body {
 .tv .overlay__card {
   max-width: none; width: 100%;
   border-color: var(--accent-dim);
-  padding: 20px 24px;
+  padding: 14px 24px;
 }
-.tv .overlay__title { font-size: 2.6rem; }
+/* The banner steals height from the board, and on game over the revealed board
+   is the thing worth looking at — so keep it compact on short screens. */
+.tv .overlay__title { font-size: clamp(1.6rem, 4vh, 2.6rem); }
+/* Nothing follows the subtitle here: the replay buttons are host-only. */
+.tv .overlay__sub { margin-bottom: 0; }
 
 /* --- responsive larger screens ------------------------------------------ */
 @media (min-width: 560px) {
