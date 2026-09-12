@@ -254,6 +254,17 @@ body {
 .seg__btn:hover { color: var(--text); }
 .seg__btn--on { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 700; }
 
+/* Timer length pickers: a labelled, tighter variant of .seg. */
+.timer-lengths { margin-bottom: 10px; }
+.timer-row { display: flex; align-items: center; gap: 10px; }
+.timer-row__label {
+  flex: none; width: 48px;
+  font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--muted-2);
+}
+.seg--sm { flex: 1; margin-bottom: 6px; }
+.seg--sm .seg__btn { font-size: 0.7rem; }
+
 /* --- tags / chips -------------------------------------------------------- */
 .tag {
   font-family: var(--mono); font-size: 0.62rem; font-weight: 700;
@@ -303,10 +314,17 @@ body {
   min-height: 50px;
 }
 .clue-bar__text {
+  /* Grows so the guess count and the clock stay grouped on the right. */
+  flex: 1 1 auto;
   font-family: var(--mono); font-size: 1.05rem; letter-spacing: 0.06em;
   color: var(--text); text-transform: uppercase;
 }
 .clue-bar__guesses { font-family: var(--mono); font-size: 0.72rem; color: var(--accent); white-space: nowrap; }
+.clue-bar__timer {
+  font-family: var(--mono); font-weight: 700; font-size: 0.95rem;
+  color: var(--muted); white-space: nowrap;
+}
+.clue-bar__timer--urgent { color: var(--red); }
 
 /* --- the board ----------------------------------------------------------- */
 .board {
@@ -492,6 +510,7 @@ body {
 .tv .clue-bar { min-height: 64px; padding: 16px 22px; }
 .tv .clue-bar__text { font-size: 1.5rem; }
 .tv .clue-bar__guesses { font-size: 1rem; }
+.tv .clue-bar__timer { font-size: 1.6rem; }
 
 /* Bigger board + word type for distance viewing. */
 .tv .board { gap: 12px; margin-bottom: 22px; }

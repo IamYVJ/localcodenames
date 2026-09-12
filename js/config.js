@@ -68,6 +68,17 @@ export const GRID_COLS = 5;
 export const EXTRA_GUESS = 1;
 export const UNLIMITED = 'inf'; // sentinel for the ∞ clue option
 
+// --- Turn timer ----------------------------------------------------------
+// Off by default; the host turns it on in the lobby. Two separate clocks: one
+// while the Spymaster composes a clue, one while their Operatives guess.
+// `presets` drives the lobby buttons, so adding a length here is enough.
+export const TIMER = {
+  defaultEnabled: false,
+  clueSeconds: 60,
+  guessSeconds: 60,
+  presets: [60, 120, 240, 300],
+};
+
 // Team composition required before a game may start.
 export const REQUIRED = {
   spymastersPerTeam: 1,

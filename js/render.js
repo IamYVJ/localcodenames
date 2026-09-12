@@ -14,7 +14,7 @@
 //     never clobbered by a state update; focus and scroll are preserved.
 // ===========================================================================
 
-import { UNLIMITED, GRID_COLS } from './config.js';
+import { UNLIMITED, GRID_COLS, TIMER } from './config.js';
 import { cap } from './rules.js';
 
 const COLOR_CLASSES = ['card--red', 'card--blue', 'card--neutral', 'card--assassin'];
@@ -89,6 +89,7 @@ function flush() {
   if (boardBuilt && next.game) applyState(prev, next);
 
   patchHud(prev, next);
+  patchTimer(next);
   patchPanels(prev, next);
   patchGameOver(prev, next);
 
@@ -190,6 +191,42 @@ function patchHud(prev, next) {
     else guessText = `${Math.max(0, ng.guessesAllowed - ng.guessesUsed)} guesses left`;
   }
   setText('clue-guesses', guessText);
+}
+
+// =========================================================================
+// Turn countdown
+//
+// The wire carries a duration, never a timestamp: each view re-anchors the
+// countdown on THIS device's monotonic clock, so a device with a wrong
+// wall-clock still counts down correctly. The host remains the only authority
+// on expiry — this is display only.
+// =========================================================================
+let timerAnchor = null;
+let timerTick = null;
+
+function patchTimer(next) {
+  const t = next.phase === 'playing' && next.game ? next.game.timer : null;
+  const el = $('clue-timer');
+  if (!t) { stopTimerTick(); hide(el); return; }
+
+  timerAnchor = performance.now() + t.remainingMs;
+  show(el);
+  paintTimer();
+  if (!timerTick) timerTick = setInterval(paintTimer, 250);
+}
+
+function paintTimer() {
+  const el = $('clue-timer');
+  if (!el || timerAnchor == null) return;
+  const left = Math.max(0, timerAnchor - performance.now());
+  const secs = Math.ceil(left / 1000);
+  setText('clue-timer', `${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, '0')}`);
+  el.classList.toggle('clue-bar__timer--urgent', left <= 10000);
+}
+
+function stopTimerTick() {
+  if (timerTick) { clearInterval(timerTick); timerTick = null; }
+  timerAnchor = null;
 }
 
 // =========================================================================
@@ -314,12 +351,45 @@ export function renderRoster(view) {
     const chk = view.canStart || { ok: false, problems: [] };
     $('btn-start').disabled = !chk.ok;
     setText('start-help', chk.ok ? 'Ready when you are.' : chk.problems.join(' '));
+    patchTimerControls(view.timer);
   }
 
   // Reflect my current team/role on the segmented controls.
   if (view.you) {
     markSeg('[data-team]', 'team', view.you.team || 'none');
     markSeg('[data-role]', 'role', view.you.role);
+  }
+}
+
+// One button per configured preset, so config.js stays the only place the
+// available lengths are listed.
+let timerBuilt = false;
+
+export function buildTimerControls() {
+  if (timerBuilt) return;
+  for (const group of document.querySelectorAll('#timer-lengths .seg[data-timer]')) {
+    const field = group.dataset.timer;
+    for (const secs of TIMER.presets) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'seg__btn';
+      b.textContent = secs % 60 === 0 ? `${secs / 60}m` : `${secs}s`;
+      b.dataset.secs = String(secs);
+      b.addEventListener('click', () => handlers.onTimer?.({ [field]: secs }));
+      group.appendChild(b);
+    }
+  }
+  timerBuilt = true;
+}
+
+function patchTimerControls(t) {
+  if (!t) return;
+  $('timer-off').classList.toggle('seg__btn--on', !t.enabled);
+  $('timer-on').classList.toggle('seg__btn--on', !!t.enabled);
+  toggle($('timer-lengths'), !!t.enabled);
+  for (const group of document.querySelectorAll('#timer-lengths .seg[data-timer]')) {
+    const want = String(t[group.dataset.timer]);
+    for (const b of group.children) b.classList.toggle('seg__btn--on', b.dataset.secs === want);
   }
 }
 
@@ -411,4 +481,5 @@ function toggle(el, on) { if (el) el.hidden = !on; }
 export function resetRenderState() {
   prevView = null;
   pendingView = null;
+  stopTimerTick();
 }

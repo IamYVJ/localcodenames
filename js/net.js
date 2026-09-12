@@ -51,6 +51,7 @@ const T = {
   // host-issued lobby control aimed at a specific seat (host moving a player)
   ADMIN_SET_TEAM: 'adminSetTeam',
   ADMIN_SET_ROLE: 'adminSetRole',
+  SET_TIMER: 'setTimer',
 };
 
 // =========================================================================
@@ -72,6 +73,8 @@ export class HostNet {
     this.connPeerToToken = new Map();
     // token -> grace timer id
     this.graceTimers = new Map();
+    // The single authoritative turn-clock timeout. Only the host runs one.
+    this.clockTimer = null;
     this.idRetry = 0;
 
     // Authoritative state: resume from snapshot, or start fresh.
@@ -79,6 +82,8 @@ export class HostNet {
       this.state = opts.state;
       // Everyone is considered offline until they re-handshake.
       for (const s of Object.values(this.state.seats)) s.connected = false;
+      // Snapshots written before the timer existed have no config.
+      if (!this.state.timer) this.state.timer = Rules.defaultTimerConfig();
       this.hostToken = opts.hostToken;
     } else {
       this.hostToken = opts.hostToken || Store.uuid();
@@ -91,6 +96,10 @@ export class HostNet {
   }
 
   start() {
+    // A resumed snapshot carries a deadline from a session that died with the
+    // tab. Give the turn its full time back rather than resuming mid-tick.
+    Rules.restartTurnClock(this.state);
+    this._syncClock();
     this._createPeer();
   }
 
@@ -275,7 +284,8 @@ export class HostNet {
     if (!token) { safeSend(conn, { t: T.ERR, m: 'Re-join required.' }); return; }
     // Remote clients may never invoke host-only controls.
     if (msg.t === T.START || msg.t === T.AGAIN || msg.t === T.NEW_GAME
-        || msg.t === T.ADMIN_SET_TEAM || msg.t === T.ADMIN_SET_ROLE) {
+        || msg.t === T.ADMIN_SET_TEAM || msg.t === T.ADMIN_SET_ROLE
+        || msg.t === T.SET_TIMER) {
       safeSend(conn, { t: T.ERR, m: 'Only the host can do that.' });
       return;
     }
@@ -293,6 +303,7 @@ export class HostNet {
       case T.CLUE: res = Rules.giveClue(this.state, token, { word: msg.word, count: msg.count }); break;
       case T.GUESS: res = Rules.guess(this.state, token, msg.index); break;
       case T.END_TURN: res = Rules.endTurn(this.state, token); break;
+      case T.SET_TIMER: res = Rules.setTimerConfig(this.state, msg.patch); break;
       default: return { ok: false, error: 'Unknown action.' };
     }
     if (res.ok) {
@@ -309,6 +320,7 @@ export class HostNet {
   localClue(word, count) { return this._apply(this.hostToken, { t: T.CLUE, word, count }); }
   localGuess(index) { return this._apply(this.hostToken, { t: T.GUESS, index }); }
   localEndTurn() { return this._apply(this.hostToken, { t: T.END_TURN }); }
+  localSetTimer(patch) { return this._apply(this.hostToken, { t: T.SET_TIMER, patch }); }
 
   // host-only admin moves (assign any seat from the lobby)
   adminSetTeam(seatId, team) {
@@ -341,10 +353,31 @@ export class HostNet {
 
   _broadcast() {
     if (this.destroyed) return;
+    // Every mutation funnels through here, so this is the one place the turn
+    // clock needs re-arming.
+    this._syncClock();
     for (const [token, conn] of this.conns) {
       if (conn && conn.open) safeSend(conn, { t: T.STATE, view: Rules.viewFor(this.state, token) });
     }
     this._emitLocal();
+  }
+
+  // The host is the sole timekeeper: it alone performs the expiry transition,
+  // then broadcasts, which is what moves every client's UI on.
+  _syncClock() {
+    clearTimeout(this.clockTimer);
+    this.clockTimer = null;
+    if (this.destroyed) return;
+    const g = this.state.game;
+    if (this.state.phase !== 'playing' || !g || g.deadlineAt == null) return;
+    this.clockTimer = setTimeout(() => {
+      this.clockTimer = null;
+      if (this.destroyed || !Rules.timeExpired(this.state)) return;
+      Rules.timeout(this.state);
+      this._persist();
+      this._broadcast();
+      this.opts.onPlayerChange?.();
+    }, Math.max(0, g.deadlineAt - Date.now()));
   }
 
   _emitLocal() {
@@ -371,6 +404,8 @@ export class HostNet {
 
   destroy() {
     this.destroyed = true;
+    clearTimeout(this.clockTimer);
+    this.clockTimer = null;
     for (const id of this.graceTimers.values()) clearTimeout(id);
     this.graceTimers.clear();
     try { this.peer?.destroy(); } catch { /* ignore */ }

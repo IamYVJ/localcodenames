@@ -11,7 +11,7 @@
 // ===========================================================================
 
 import {
-  KEY_DISTRIBUTION, BOARD_SIZE, EXTRA_GUESS, UNLIMITED, CARD, TEAMS, REQUIRED,
+  KEY_DISTRIBUTION, BOARD_SIZE, EXTRA_GUESS, UNLIMITED, CARD, TEAMS, REQUIRED, TIMER,
 } from './config.js';
 import { WORD_LIST } from './words.js';
 
@@ -41,6 +41,17 @@ export function createInitialState(roomCode, hostSeatId) {
     nextSeat: 1,
     seats: {}, // token -> seat
     game: null,
+    // Timer config lives at the top level so it survives a re-deal and a
+    // return to the lobby — the host sets it once per room, not per game.
+    timer: defaultTimerConfig(),
+  };
+}
+
+export function defaultTimerConfig() {
+  return {
+    enabled: TIMER.defaultEnabled,
+    clueSeconds: TIMER.clueSeconds,
+    guessSeconds: TIMER.guessSeconds,
   };
 }
 
@@ -92,9 +103,62 @@ export function dealGame(state) {
     winner: null,
     endedByAssassin: false,
     lastEvent: `Game on. ${cap(startingTeam)} team goes first.`,
+    // Host-side absolute epoch ms. Never sent on the wire — see timerView().
+    deadlineAt: null,
   };
   state.phase = 'playing';
+  armClock(state);
   return state;
+}
+
+// --- turn clock ----------------------------------------------------------
+//
+// The host is the only authority: it owns the real timeout and performs the
+// expiry transition. Clients receive a *relative* remainingMs and re-anchor
+// against their own clock, so device clock skew can never corrupt a countdown.
+
+// Which clock applies right now — composing a clue, or guessing on one.
+export function turnClockMs(state) {
+  const t = state.timer;
+  const g = state.game;
+  if (!t || !t.enabled || !g || state.phase !== 'playing') return null;
+  const seconds = g.clue ? t.guessSeconds : t.clueSeconds;
+  return seconds * 1000;
+}
+
+function armClock(state) {
+  const ms = turnClockMs(state);
+  state.game.deadlineAt = ms == null ? null : Date.now() + ms;
+}
+
+// Re-arm from now. Used when the host resumes a persisted game, where the
+// stored deadline belongs to a session that may have ended hours ago.
+export function restartTurnClock(state) {
+  if (state.phase !== 'playing' || !state.game) return;
+  armClock(state);
+}
+
+// True once the deadline has passed. The small tolerance absorbs a setTimeout
+// that fires a hair early, which would otherwise re-arm a ~0ms clock.
+export function timeExpired(state) {
+  const g = state.game;
+  if (state.phase !== 'playing' || !g || g.deadlineAt == null) return false;
+  return Date.now() >= g.deadlineAt - 250;
+}
+
+export function setTimerConfig(state, patch) {
+  if (state.phase !== 'lobby') {
+    return { ok: false, error: 'Timer settings are locked once the game starts.' };
+  }
+  const t = state.timer;
+  if (patch.enabled !== undefined) t.enabled = !!patch.enabled;
+  for (const field of ['clueSeconds', 'guessSeconds']) {
+    if (patch[field] === undefined) continue;
+    const n = Number(patch[field]);
+    if (!TIMER.presets.includes(n)) return { ok: false, error: 'Bad timer length.' };
+    t[field] = n;
+  }
+  return { ok: true };
 }
 
 // --- composition validation ---------------------------------------------
@@ -205,6 +269,8 @@ export function giveClue(state, token, payload) {
   game.guessesAllowed = (v.count === UNLIMITED || v.count === 0) ? UNLIMITED : v.count + EXTRA_GUESS;
   const shown = v.count === UNLIMITED ? '∞' : v.count;
   game.lastEvent = `${cap(seat.team)} Spymaster's clue: ${v.word.toUpperCase()} ${shown}.`;
+  // Clue is in: swap the clue clock for the guess clock.
+  armClock(state);
   return { ok: true, warning: v.warning };
 }
 
@@ -222,11 +288,13 @@ export function countsRemaining(game) {
   return { red: agentsRemaining(game, 'red'), blue: agentsRemaining(game, 'blue') };
 }
 
-function endTurnInternal(game) {
+function endTurnInternal(state) {
+  const game = state.game;
   game.turn = otherTeam(game.turn);
   game.clue = null;
   game.guessesUsed = 0;
   game.guessesAllowed = null;
+  armClock(state);
 }
 
 function finishGame(state, winner, byAssassin) {
@@ -277,20 +345,20 @@ export function guess(state, token, index) {
     game.lastEvent = `${cap(team)} revealed ${word} — a ${cap(team)} agent. Keep going.`;
     if (game.guessesAllowed !== UNLIMITED && game.guessesUsed >= game.guessesAllowed) {
       game.lastEvent = `${cap(team)} revealed ${word} — a ${cap(team)} agent. No guesses left; turn passes.`;
-      endTurnInternal(game);
+      endTurnInternal(state);
     }
     return { ok: true };
   }
 
   if (color === CARD.NEUTRAL) {
     game.lastEvent = `${cap(team)} revealed ${word} — a bystander. Turn passes.`;
-    endTurnInternal(game);
+    endTurnInternal(state);
     return { ok: true };
   }
 
   // Must be the OTHER team's agent: it helps them; turn passes.
   game.lastEvent = `${cap(team)} revealed ${word} — a ${cap(color)} agent. Turn passes.`;
-  endTurnInternal(game);
+  endTurnInternal(state);
   return { ok: true };
 }
 
@@ -302,7 +370,19 @@ export function endTurn(state, token) {
   if (seat.team !== game.turn) return { ok: false, error: 'It is not your team\'s turn.' };
   if (!game.clue) return { ok: false, error: 'Wait for your Spymaster\'s clue.' };
   game.lastEvent = `${cap(seat.team)} ended their turn.`;
-  endTurnInternal(game);
+  endTurnInternal(state);
+  return { ok: true };
+}
+
+// Host-driven: the turn clock ran out. Same transition either way, but the
+// message differs so players can see which clock killed them.
+export function timeout(state) {
+  const game = state.game;
+  if (state.phase !== 'playing' || !game) return { ok: false, error: 'No active game.' };
+  game.lastEvent = game.clue
+    ? `${cap(game.turn)} ran out of time to guess. Turn passes.`
+    : `${cap(game.turn)} Spymaster ran out of time. Turn passes.`;
+  endTurnInternal(state);
   return { ok: true };
 }
 
@@ -347,6 +427,18 @@ function spectatorCount(state) {
   return n;
 }
 
+// The clock as clients are allowed to see it: a duration, never a timestamp.
+// Anchoring on the recipient's own clock is what makes this immune to skew.
+function timerView(state) {
+  const g = state.game;
+  if (!g || g.deadlineAt == null) return null;
+  return {
+    phase: g.clue ? 'guess' : 'clue',
+    remainingMs: Math.max(0, g.deadlineAt - Date.now()),
+    totalMs: turnClockMs(state),
+  };
+}
+
 // Public game projection. Card colors are exposed ONLY for revealed cards
 // (or all cards once the game is over).
 function publicGame(state) {
@@ -369,6 +461,7 @@ function publicGame(state) {
     counts,
     fullKeyRevealed: over,
     lastEvent: g.lastEvent,
+    timer: over ? null : timerView(state),
   };
 }
 
@@ -386,6 +479,7 @@ export function viewFor(state, token) {
     game: publicGame(state),
     composition: teamComposition(state),
     canStart: canStart(state),
+    timer: { ...state.timer },
     you: seat ? {
       seatId: seat.seatId,
       name: seat.name,

@@ -122,6 +122,24 @@
 
       <!-- Host-only controls -->
       <section id="host-controls" class="controls" hidden>
+        <p class="controls__label">Turn timer</p>
+        <div class="seg" role="group" aria-label="Turn timer">
+          <button id="timer-off" class="seg__btn" data-timer-enabled="off">Off</button>
+          <button id="timer-on" class="seg__btn" data-timer-enabled="on">On</button>
+        </div>
+        <!-- Preset buttons are built from config.TIMER.presets so the list of
+             lengths has exactly one source of truth. -->
+        <div id="timer-lengths" class="timer-lengths" hidden>
+          <div class="timer-row">
+            <span class="timer-row__label">Clue</span>
+            <div class="seg seg--sm" data-timer="clueSeconds" role="group" aria-label="Seconds to give a clue"></div>
+          </div>
+          <div class="timer-row">
+            <span class="timer-row__label">Guess</span>
+            <div class="seg seg--sm" data-timer="guessSeconds" role="group" aria-label="Seconds to guess"></div>
+          </div>
+        </div>
+
         <p id="start-help" class="controls__help"></p>
         <button id="btn-start" class="btn btn--primary">Start game</button>
       </section>
@@ -144,6 +162,7 @@
       <div id="clue-bar" class="clue-bar">
         <span id="clue-text" class="clue-bar__text">Waiting for the first clue…</span>
         <span id="clue-guesses" class="clue-bar__guesses"></span>
+        <span id="clue-timer" class="clue-bar__timer" hidden></span>
       </div>
 
       <!-- The 5x5 grid is built ONCE by render.js and only ever patched. -->

@@ -53,6 +53,7 @@ function boot() {
   View.initRender({
     onGuess: doGuess,
     onAdmin: doAdmin,
+    onTimer: setTimer,
   });
 
   UI.showScreen('home');
@@ -286,6 +287,10 @@ function wireLobby() {
     btn.addEventListener('click', () => setMyRole(btn.dataset.role));
   });
 
+  View.buildTimerControls();
+  $('timer-off').addEventListener('click', () => setTimer({ enabled: false }));
+  $('timer-on').addEventListener('click', () => setTimer({ enabled: true }));
+
   $('btn-start').addEventListener('click', () => {
     const res = app.host?.startGame();
     if (res && !res.ok) UI.toast(res.error);
@@ -301,6 +306,13 @@ function setMyTeam(team) {
 function setMyRole(role) {
   if (app.mode === 'host') { const r = app.host.localSetRole(role); if (r && !r.ok) UI.toast(r.error); }
   else app.client?.chooseRole(role);
+}
+
+// host-only: the timer is a room setting, so only the host can change it
+function setTimer(patch) {
+  if (app.mode !== 'host') return;
+  const r = app.host.localSetTimer(patch);
+  if (r && !r.ok) UI.toast(r.error);
 }
 
 // host-only: move another player from the lobby
