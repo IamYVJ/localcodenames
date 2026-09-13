@@ -11,7 +11,7 @@
 // each WebRTC handshake. After that, gameplay traffic is direct P2P on the LAN.
 // ===========================================================================
 
-const CACHE = 'codenames-v8';
+const CACHE = 'codenames-v9';
 
 // Local app shell (relative to this worker's location).
 const SHELL = [
@@ -27,6 +27,7 @@ const SHELL = [
   'js/net.js',
   'js/render.js',
   'js/ui.js',
+  'js/wakelock.js',
   'icons/icon.svg',
   'icons/icon-192.png',
   'icons/icon-512.png',

@@ -9,6 +9,7 @@ import { HostNet, ClientNet, randomRoomCode } from './net.js';
 import * as Store from './storage.js';
 import * as UI from './ui.js';
 import * as View from './render.js';
+import { keepAwake } from './wakelock.js';
 import { getHostState } from './storage.js';
 
 const $ = (id) => document.getElementById(id);
@@ -49,6 +50,7 @@ function boot() {
   wireJoin();
   wireLobby();
   wireGame();
+  wireLifecycle();
 
   View.initRender({
     onGuess: doGuess,
@@ -58,6 +60,28 @@ function boot() {
 
   UI.showScreen('home');
   app.screen = 'home';
+}
+
+// =========================================================================
+// page lifecycle
+//
+// Phones freeze a backgrounded tab: timers stop and the WebRTC data channel
+// dies without firing 'close'. Nothing inside net.js can observe that from the
+// inside, so the moment we're visible again is the cue to re-check the link.
+// Waiting for the next heartbeat instead would leave the user staring at a
+// stale board for seconds after they've already come back.
+// =========================================================================
+function wireLifecycle() {
+  const wake = () => {
+    if (document.visibilityState !== 'visible') return;
+    try { app.host?.wake(); } catch { /* ignore */ }
+    try { app.client?.wake(); } catch { /* ignore */ }
+  };
+  document.addEventListener('visibilitychange', wake);
+  // Coming back from the bfcache (Safari's back/forward gesture).
+  window.addEventListener('pageshow', wake);
+  // The radio may return well after the tab does, e.g. leaving airplane mode.
+  window.addEventListener('online', wake);
 }
 
 // =========================================================================
@@ -126,6 +150,9 @@ function startHosting(roomCode, resume, name) {
     },
   });
   app.host.start();
+  // The host is the one device that must not sleep — it owns the state and the
+  // turn clock, so its screen locking stalls the whole room.
+  keepAwake(true);
 
   setLobbyCode(roomCode);
   UI.showScreen('lobby');
@@ -231,6 +258,9 @@ function joinGame() {
     },
   });
   app.client.start();
+  // Operatives can go a long while without tapping anything; without this their
+  // screen locks mid-turn and drops them.
+  keepAwake(true);
 
   UI.setNetStatus('connecting');
   // We stay on the join screen until the first view arrives, so a bad code
@@ -427,6 +457,8 @@ function leaveRoom() {
 }
 
 function teardownNet() {
+  // Nobody is in a room any more — stop holding the user's screen awake.
+  keepAwake(false);
   try { app.host?.destroy(); } catch { /* ignore */ }
   try { app.client?.destroy(); } catch { /* ignore */ }
   app.host = null;

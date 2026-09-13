@@ -74,6 +74,12 @@ export class HostNet {
     this.connPeerToToken = new Map();
     // token -> grace timer id
     this.graceTimers = new Map();
+    // token -> Date.now() of the last thing we heard on that connection.
+    // A sleeping phone's data channel goes silent without ever firing 'close',
+    // so silence is the only reliable signal that a player has dropped.
+    this.lastRecvByToken = new Map();
+    this.hbTimer = null;
+    this.hbLastTick = 0;
     // The single authoritative turn-clock timeout. Only the host runs one.
     this.clockTimer = null;
     this.idRetry = 0;
@@ -101,6 +107,7 @@ export class HostNet {
     // tab. Give the turn its full time back rather than resuming mid-tick.
     Rules.restartTurnClock(this.state);
     this._syncClock();
+    this._startHeartbeat();
     this._createPeer();
   }
 
@@ -181,22 +188,36 @@ export class HostNet {
   _onConnClose(conn) {
     const token = this.connPeerToToken.get(conn.peer);
     if (!token) return;
-    // Only treat as gone if this is still the active connection for the seat.
-    if (this.conns.get(token) === conn) {
-      this.conns.delete(token);
-      const seat = this.state.seats[token];
-      if (seat) {
-        seat.connected = false;
-        seat.lastSeen = Date.now();
-        // Keep the seat as "reconnecting" — never give the turn away on a
-        // transient drop. A grace timer only flips the roster label later.
-        this._startGrace(token);
-      }
+    // A superseded connection closing must never evict the seat's live one.
+    // Still drop its reverse mapping, or reconnect churn leaks an entry per
+    // attempt — and a sleeping phone can generate a lot of attempts.
+    if (this.conns.get(token) !== conn) {
       this.connPeerToToken.delete(conn.peer);
-      this._persist();
-      this._broadcast();
-      this.opts.onPlayerChange?.();
+      return;
     }
+    this._dropConn(token, conn);
+  }
+
+  // Single exit path for a connection going away, whether PeerJS told us
+  // ('close'/'error') or the heartbeat noticed it had gone quiet.
+  _dropConn(token, conn) {
+    this.conns.delete(token);
+    this.lastRecvByToken.delete(token);
+    this.connPeerToToken.delete(conn.peer);
+    // Re-entrant: this may fire 'close', but the map entry is already gone,
+    // so _onConnClose takes the superseded branch above and stops there.
+    try { conn.close(); } catch { /* ignore */ }
+    const seat = this.state.seats[token];
+    if (seat) {
+      seat.connected = false;
+      seat.lastSeen = Date.now();
+      // Keep the seat as "reconnecting" — never give the turn away on a
+      // transient drop. A grace timer only flips the roster label later.
+      this._startGrace(token);
+    }
+    this._persist();
+    this._broadcast();
+    this.opts.onPlayerChange?.();
   }
 
   _startGrace(token) {
@@ -218,6 +239,10 @@ export class HostNet {
 
   _onData(conn, msg) {
     if (!msg || typeof msg !== 'object') return;
+    // Any traffic at all proves the channel is alive — including a PONG, which
+    // is the only thing an idle client sends.
+    const seen = this.connPeerToToken.get(conn.peer);
+    if (seen) this.lastRecvByToken.set(seen, Date.now());
     switch (msg.t) {
       case T.HELLO: return this._onHello(conn, msg);
       case T.PING: return safeSend(conn, { t: T.PONG });
@@ -267,6 +292,7 @@ export class HostNet {
     if (prev && prev !== conn) { try { prev.close(); } catch { /* ignore */ } }
     this.conns.set(token, conn);
     this.connPeerToToken.set(conn.peer, token);
+    this.lastRecvByToken.set(token, Date.now());
     this._clearGrace(token);
 
     const seat = this.state.seats[token];
@@ -383,6 +409,76 @@ export class HostNet {
     }, Math.max(0, g.deadlineAt - Date.now()));
   }
 
+  // -----------------------------------------------------------------------
+  // Liveness
+  //
+  // WebRTC does not reliably fire 'close' when the peer's device goes to
+  // sleep — the channel just stops carrying anything while still reporting
+  // open. Without this the host would keep broadcasting into a dead channel
+  // and show a departed player as present indefinitely.
+  // -----------------------------------------------------------------------
+  _startHeartbeat() {
+    this._stopHeartbeat();
+    this.hbLastTick = Date.now();
+    this.hbTimer = setInterval(() => this._heartbeatTick(), RECONNECT.heartbeatMs);
+  }
+
+  _stopHeartbeat() {
+    if (this.hbTimer) { clearInterval(this.hbTimer); this.hbTimer = null; }
+  }
+
+  _heartbeatTick() {
+    if (this.destroyed) return;
+    const now = Date.now();
+    const gap = now - this.hbLastTick;
+    this.hbLastTick = now;
+
+    // The host itself was frozen or throttled (screen off, app backgrounded).
+    // Every client looks stale on the wall clock, but that says nothing about
+    // whether they're actually gone — so give them a fresh window to answer
+    // instead of evicting the whole room on the first tick back.
+    if (gap > RECONNECT.heartbeatMs * 2) {
+      for (const token of this.conns.keys()) this.lastRecvByToken.set(token, now);
+      this._pingAll();
+      return;
+    }
+
+    // Collect first: _dropConn mutates this.conns.
+    const dead = [];
+    for (const [token, conn] of this.conns) {
+      const last = this.lastRecvByToken.get(token) ?? now;
+      if (now - last > RECONNECT.heartbeatMs * 2.5) dead.push([token, conn]);
+    }
+    for (const [token, conn] of dead) this._dropConn(token, conn);
+    this._pingAll();
+  }
+
+  _pingAll() {
+    for (const [, conn] of this.conns) safeSend(conn, { t: T.PING });
+  }
+
+  // Called when the tab becomes visible again (see main.js). A backgrounded
+  // host comes back with a throttled turn clock, a possibly-dead broker link,
+  // and connections of unknown health — settle all three at once.
+  wake() {
+    if (this.destroyed) return;
+
+    // setTimeout was throttled while we were away, so the turn deadline may
+    // already have passed. Re-arming recomputes it from the real clock.
+    this._syncClock();
+
+    if (!this.peer || this.peer.destroyed) { this._createPeer(); return; }
+    if (this.peer.disconnected) {
+      this.opts.onStatus?.('reconnecting');
+      try { this.peer.reconnect(); } catch { this._createPeer(); }
+    }
+
+    const now = Date.now();
+    this.hbLastTick = now;
+    for (const token of this.conns.keys()) this.lastRecvByToken.set(token, now);
+    this._pingAll();
+  }
+
   _emitLocal() {
     this.opts.onLocalView?.(Rules.viewFor(this.state, this.hostToken));
   }
@@ -407,10 +503,12 @@ export class HostNet {
 
   destroy() {
     this.destroyed = true;
+    this._stopHeartbeat();
     clearTimeout(this.clockTimer);
     this.clockTimer = null;
     for (const id of this.graceTimers.values()) clearTimeout(id);
     this.graceTimers.clear();
+    this.lastRecvByToken.clear();
     try { this.peer?.destroy(); } catch { /* ignore */ }
   }
 }
@@ -439,6 +537,9 @@ export class ClientNet {
     this.watchdog = null;
     this.heartbeat = null;
     this.lastRecv = 0;
+    // When the watchdog last ran. Compared against the interval to tell a dead
+    // channel apart from a tab that was simply frozen — see _startHeartbeat.
+    this.wdLastTick = 0;
     this.unavailableStreak = 0;
     this.connectedOnce = false;
   }
@@ -551,13 +652,29 @@ export class ClientNet {
   _startHeartbeat() {
     this._stopHeartbeat();
     this.lastRecv = Date.now();
+    this.wdLastTick = Date.now();
     this.heartbeat = setInterval(() => {
       if (this.conn && this.conn.open) this.send({ t: T.PING });
     }, RECONNECT.heartbeatMs);
     // Watchdog: if we hear nothing for a while, force a reconnect.
     this.watchdog = setInterval(() => {
       if (this.destroyed) return;
-      if (Date.now() - this.lastRecv > RECONNECT.heartbeatMs * 2.5) {
+      const now = Date.now();
+      const gap = now - this.wdLastTick;
+      this.wdLastTick = now;
+
+      // The interval should fire every heartbeatMs. A much longer gap means
+      // this tab was frozen or throttled (screen off, backgrounded), not that
+      // the host went quiet — the silence is our fault, and tearing down a
+      // perfectly good channel over it causes the very drop we're avoiding.
+      // Re-arm, probe, and let the next tick judge on honest evidence.
+      if (gap > RECONNECT.heartbeatMs * 2) {
+        this.lastRecv = now;
+        this.send({ t: T.PING });
+        return;
+      }
+
+      if (now - this.lastRecv > RECONNECT.heartbeatMs * 2.5) {
         this._status('reconnecting');
         try { this.conn?.close(); } catch { /* ignore */ }
         this._scheduleReconnect();
@@ -589,6 +706,35 @@ export class ClientNet {
         this._connectToHost();
       }
     }, delay);
+  }
+
+  // Called when the tab becomes visible again (see main.js). Waking is the one
+  // moment we know a drop is likely, so skip the backoff entirely: sitting out
+  // up to maxDelayMs after the user is already looking at the screen is what
+  // makes a reconnect feel like a hang.
+  wake() {
+    if (this.destroyed) return;
+    this.attempt = 0;
+    if (this.reconnectTimer) { clearTimeout(this.reconnectTimer); this.reconnectTimer = null; }
+
+    if (!this.peer || this.peer.destroyed) { this._createPeer(); return; }
+    if (this.peer.disconnected) {
+      this._status('reconnecting');
+      try { this.peer.reconnect(); } catch { this._createPeer(); return; }
+      // Give the broker a moment to take us back before re-dialling the host.
+      setTimeout(() => this._connectToHost(), 400);
+      return;
+    }
+    if (!this.conn || !this.conn.open) {
+      this._status('reconnecting');
+      this._connectToHost();
+      return;
+    }
+    // Channel still claims to be open. It may be half-open, so don't trust it
+    // blindly — but don't tear it down either. Probe and let the watchdog rule.
+    this.lastRecv = Date.now();
+    this.wdLastTick = Date.now();
+    this.send({ t: T.PING });
   }
 
   // Public: manually retry (e.g. user taps "Retry" after host-left).
