@@ -55,6 +55,7 @@ function boot() {
   View.initRender({
     onGuess: doGuess,
     onAdmin: doAdmin,
+    onUnkick: doUnkick,
     onTimer: setTimer,
   });
 
@@ -256,6 +257,16 @@ function joinGame() {
     onHostLeft: () => {
       UI.setNetStatus('hostgone', { onRetry: () => app.client && app.client.retryNow() });
     },
+    onKicked: (m) => {
+      // Deliberately keep the stored seat token. Clearing it would let the
+      // client walk straight back in as a brand-new player on the next join,
+      // which is exactly what the host just said they didn't want.
+      teardownNet();
+      UI.hideNetStatus();
+      UI.showScreen('home');
+      app.screen = 'home';
+      UI.toast(m);
+    },
   });
   app.client.start();
   // Operatives can go a long while without tapping anything; without this their
@@ -350,8 +361,27 @@ function doAdmin(seatId, kind, val) {
   if (app.mode !== 'host') return;
   let r;
   if (kind === 'team') r = app.host.adminSetTeam(seatId, val === 'none' ? null : val);
+  else if (kind === 'kick') r = doKick(seatId);
   else r = app.host.adminSetRole(seatId, val);
   if (r && !r.ok) UI.toast(r.error);
+}
+
+// The kick button sits inches from the team buttons and is the same size, so a
+// mis-tap is likely — confirm by name before removing anyone.
+function doKick(seatId) {
+  const p = (app.view?.roster || []).find((s) => s.seatId === seatId);
+  const name = p?.name || 'this player';
+  if (!window.confirm(`Remove ${name} from the room?`)) return null;
+  const r = app.host.adminKick(seatId);
+  if (r && r.ok) UI.toast(`${r.name} was removed.`);
+  return r;
+}
+
+function doUnkick(token) {
+  if (app.mode !== 'host') return;
+  const r = app.host.adminUnkick(token);
+  if (r && !r.ok) { UI.toast(r.error); return; }
+  UI.toast(`${r.name} can rejoin with the room code.`);
 }
 
 // =========================================================================
@@ -374,6 +404,13 @@ function wireGame() {
 
   $('btn-start-clock').addEventListener('click', () => {
     const r = app.host?.localStartClock();
+    if (r && !r.ok) UI.toast(r.error);
+  });
+
+  $('btn-skip-turn').addEventListener('click', () => {
+    const turn = app.view?.game?.turn;
+    if (!window.confirm(`Skip ${turn ? turn.toUpperCase() : 'this'} team's turn?`)) return;
+    const r = app.host?.localSkipTurn();
     if (r && !r.ok) UI.toast(r.error);
   });
 

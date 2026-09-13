@@ -44,6 +44,10 @@ export function createInitialState(roomCode, hostSeatId) {
     // Timer config lives at the top level so it survives a re-deal and a
     // return to the lobby — the host sets it once per room, not per game.
     timer: defaultTimerConfig(),
+    // Players the host has removed: [{ token, name }]. Lives in the state (not
+    // just in memory) so a kick survives a host reload — otherwise resuming the
+    // room would silently re-admit everyone the host just removed.
+    kicked: [],
   };
 }
 
@@ -242,6 +246,50 @@ export function setRole(state, token, role) {
   return { ok: true };
 }
 
+// --- removing a player ---------------------------------------------------
+//
+// Deleting the seat is only half the job: the removed player's client keeps
+// reconnecting on its own, and would be handed a brand-new seat seconds later.
+// The block list is what makes a kick stick — see HostNet._onHello.
+//
+// This is a courtesy control for a room full of friends, NOT a security
+// boundary: the block is keyed on the client's stored token, so anyone willing
+// to clear their site data can come back as a new player.
+
+function kickList(state) {
+  if (!Array.isArray(state.kicked)) state.kicked = [];
+  return state.kicked;
+}
+
+export function isKicked(state, token) {
+  return !!token && kickList(state).some((k) => k.token === token);
+}
+
+export function kickSeat(state, seatId) {
+  // Mid-game removal would strip a team of its Spymaster with no way back, so
+  // the control only exists while the roster is still being assembled.
+  if (state.phase !== 'lobby') return { ok: false, error: 'Players can only be removed in the lobby.' };
+  const seat = Object.values(state.seats).find((s) => s.seatId === seatId);
+  if (!seat) return { ok: false, error: 'No such player.' };
+  if (seat.seatId === state.hostSeatId) return { ok: false, error: 'The host cannot be removed.' };
+
+  delete state.seats[seat.token];
+  if (!isKicked(state, seat.token)) kickList(state).push({ token: seat.token, name: seat.name });
+  // The caller needs the token to close the live connection.
+  return { ok: true, token: seat.token, name: seat.name };
+}
+
+// Undo a kick. A mis-tap on a 26px button should not lock someone out of the
+// room for good, so the host keeps a visible list of who they removed.
+export function unkick(state, token) {
+  const list = kickList(state);
+  const i = list.findIndex((k) => k.token === token);
+  if (i === -1) return { ok: false, error: 'That player is not on the removed list.' };
+  const [entry] = list.splice(i, 1);
+  // The seat itself is gone; they rejoin as a new player on their next attempt.
+  return { ok: true, name: entry.name };
+}
+
 // --- clue ----------------------------------------------------------------
 
 export function validateClue(game, board, { word, count }) {
@@ -391,6 +439,25 @@ export function endTurn(state, token) {
   return { ok: true };
 }
 
+// Host-driven: force the current turn to end. Unlike endTurn() this has no seat
+// gating (the host is often not on the active team, and may not even be an
+// Operative) and does not require a clue — the whole point is to unstick a turn
+// whose player has wandered off, which usually happens before the clue lands.
+export function skipTurn(state) {
+  const game = state.game;
+  if (state.phase !== 'playing' || !game) return { ok: false, error: 'No active game.' };
+  // Skipping before the opening clock is released must not consume the hold:
+  // the room still hasn't had its look at the board, so re-hold it afterwards.
+  const wasPending = game.clockPending;
+  game.lastEvent = `Host skipped ${cap(game.turn)}'s turn.`;
+  endTurnInternal(state);
+  if (wasPending) {
+    game.clockPending = true;
+    game.deadlineAt = null;
+  }
+  return { ok: true };
+}
+
 // Host-driven: the turn clock ran out. Same transition either way, but the
 // message differs so players can see which clock killed them.
 export function timeout(state) {
@@ -518,6 +585,11 @@ export function viewFor(state, token) {
   // TV — the privacy guarantee is structural, not cosmetic.
   if (seat && seat.role === 'spymaster' && state.game && state.phase === 'playing') {
     view.key = state.game.key.slice(); // entitled private view
+  }
+  // The removed-players list carries tokens, so it goes to the host alone —
+  // and the host's "broadcast" is a local function call, never the wire.
+  if (seat && seat.seatId === state.hostSeatId) {
+    view.kicked = kickList(state).map((k) => ({ ...k }));
   }
   return view;
 }

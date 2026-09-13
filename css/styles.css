@@ -227,7 +227,10 @@ body {
   font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.1em;
   color: var(--accent); margin-left: auto;
 }
-.roster__admin { display: flex; gap: 4px; width: 100%; margin-top: 4px; }
+/* Wraps because the buttons have a min-width and so refuse to shrink. Without
+   this, the row's min-content width becomes the floor for the whole 1fr team
+   column, and the lobby overflows sideways on any phone under ~440px. */
+.roster__admin { display: flex; flex-wrap: wrap; gap: 4px; width: 100%; margin-top: 4px; }
 .minibtn {
   font-family: var(--mono); font-size: 0.66rem;
   background: var(--surface); color: var(--muted);
@@ -235,6 +238,15 @@ body {
   padding: 3px 7px; cursor: pointer; min-width: 26px;
 }
 .minibtn:hover { color: var(--accent); border-color: var(--accent-dim); }
+/* Destructive: pushed to the far end of the row and coloured on hover so it
+   reads differently from the four "move this player" buttons beside it. */
+.minibtn--danger { margin-left: auto; }
+.minibtn--danger:hover { color: var(--red); border-color: var(--red); }
+
+/* Removed players, awaiting re-admission. Muted so the list reads as an
+   archive rather than part of the active roster. */
+.roster__item--kicked { justify-content: space-between; opacity: 0.7; }
+.roster__item--kicked .roster__name { color: var(--muted); }
 
 /* controls */
 .controls { margin-top: 14px; }
@@ -447,6 +459,19 @@ body {
 .clock-gate__hint { color: var(--muted); font-size: 0.84rem; margin: 0 0 10px; }
 .clock-gate .btn { width: 100%; }
 
+/* Host-only turn override. Deliberately quiet: it sits below the turn panels
+   and must never compete with the active player's own action. */
+.host-turn {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  margin-top: 12px; padding: 10px 14px;
+  background: var(--surface); border: 1px dashed var(--line);
+  border-radius: var(--radius);
+}
+.host-turn__hint {
+  flex: 1; min-width: 160px; margin: 0;
+  color: var(--muted-2); font-size: 0.78rem;
+}
+
 .clue-compose { display: flex; gap: 10px; margin-bottom: 12px; }
 .clue-compose .input--clue { flex: 1; }
 .stepper {
@@ -557,9 +582,11 @@ body {
 /* No player affordances on a TV. */
 .tv #my-controls,
 .tv #host-controls,
+.tv #kicked-controls,
 .tv #operative-panel,
 .tv #spymaster-panel,
 .tv #waiting-panel,
+.tv #host-turn,
 .tv #clock-gate { display: none !important; }
 
 /* Bigger HUD so scores / turn / clue read across a room. */

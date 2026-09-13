@@ -304,7 +304,12 @@ function patchPanels(prev, next) {
   // Host-only gate on the opening clock. A TV is never the host, but guard
   // anyway so a spectator can never be shown a control.
   const held = playing && ng && ng.timer && ng.timer.pending;
+  const hostPlaying = !!(playing && ng && you && you.isHost && !you.spectator);
   toggle($('clock-gate'), !!(held && you && you.isHost && !you.spectator));
+
+  // Skip turn. Hidden while the opening clock is still held so the host is only
+  // ever offered one turn action at a time.
+  toggle($('host-turn'), hostPlaying && !held);
 
   // aria-live announcement when the narrative event changes.
   if (ng && (!prev || !prev.game || prev.game.lastEvent !== ng.lastEvent)) {
@@ -383,6 +388,8 @@ export function renderRoster(view) {
   setText('head-red', `${c.red.spymasters || 0} SM · ${c.red.operatives || 0} OP`);
   setText('head-blue', `${c.blue.spymasters || 0} SM · ${c.blue.operatives || 0} OP`);
 
+  renderKicked(view);
+
   // Host start button + validation message.
   const hostControls = $('host-controls');
   toggle(hostControls, !!isHost);
@@ -454,21 +461,57 @@ function buildRosterItem(p, isHost) {
     const admin = document.createElement('span');
     admin.className = 'roster__admin';
     admin.innerHTML = ''; // built once, static structure
-    for (const [label, kind, val] of [
+    const controls = [
       ['R', 'team', 'red'], ['B', 'team', 'blue'], ['·', 'team', 'none'],
       ['SM', 'role', 'spymaster'],
-    ]) {
+    ];
+    // The host can't remove themselves, so they never get the button.
+    if (!p.isHost) controls.push(['✕', 'kick', '']);
+    for (const [label, kind, val] of controls) {
       const b = document.createElement('button');
-      b.className = 'minibtn';
+      b.className = kind === 'kick' ? 'minibtn minibtn--danger' : 'minibtn';
       b.textContent = label;
       b.dataset.kind = kind;
       b.dataset.val = val;
+      if (kind === 'kick') b.title = `Remove ${p.name} from the room`;
       b.addEventListener('click', () => handlers.onAdmin?.(p.seatId, kind, val));
       admin.appendChild(b);
     }
     li.appendChild(admin);
   }
   return li;
+}
+
+// Host-only list of removed players, each with a way back in. Small enough that
+// a plain rebuild is fine — unlike the roster, nothing here is interactive
+// mid-typing and it is empty in the overwhelming majority of rooms.
+function renderKicked(view) {
+  const section = $('kicked-controls');
+  const list = $('kicked-list');
+  if (!section || !list) return;
+  const kicked = (view.you && view.you.isHost && view.kicked) || [];
+  toggle(section, kicked.length > 0);
+  if (!kicked.length) { list.textContent = ''; return; }
+
+  list.textContent = '';
+  for (const k of kicked) {
+    const li = document.createElement('li');
+    li.className = 'roster__item roster__item--kicked';
+
+    const name = document.createElement('span');
+    name.className = 'roster__name';
+    name.textContent = k.name;
+    li.appendChild(name);
+
+    const b = document.createElement('button');
+    b.className = 'minibtn';
+    b.textContent = 'Allow back';
+    b.title = `Let ${k.name} rejoin this room`;
+    b.addEventListener('click', () => handlers.onUnkick?.(k.token));
+    li.appendChild(b);
+
+    list.appendChild(li);
+  }
 }
 
 function updateRosterItem(li, p, view) {
@@ -521,4 +564,9 @@ export function resetRenderState() {
   prevView = null;
   pendingView = null;
   stopTimerTick();
+  // Seat ids restart at p1 in every room, so these nodes would be reused by the
+  // next room the user enters — carrying host-only admin buttons (and a title
+  // naming a player from the previous room) into a room they don't host.
+  for (const li of rosterNodes.values()) li.remove();
+  rosterNodes.clear();
 }

@@ -51,8 +51,13 @@ const T = {
   // host-issued lobby control aimed at a specific seat (host moving a player)
   ADMIN_SET_TEAM: 'adminSetTeam',
   ADMIN_SET_ROLE: 'adminSetRole',
+  ADMIN_KICK: 'adminKick',
   SET_TIMER: 'setTimer',
   START_CLOCK: 'startClock',
+  SKIP_TURN: 'skipTurn',
+  // host -> client: you have been removed. Distinct from ERR so the client can
+  // leave the room instead of toasting and reconnecting forever.
+  KICKED: 'kicked',
 };
 
 // =========================================================================
@@ -89,8 +94,9 @@ export class HostNet {
       this.state = opts.state;
       // Everyone is considered offline until they re-handshake.
       for (const s of Object.values(this.state.seats)) s.connected = false;
-      // Snapshots written before the timer existed have no config.
+      // Snapshots written before the timer / kick list existed lack the fields.
       if (!this.state.timer) this.state.timer = Rules.defaultTimerConfig();
+      if (!Array.isArray(this.state.kicked)) this.state.kicked = [];
       this.hostToken = opts.hostToken;
     } else {
       this.hostToken = opts.hostToken || Store.uuid();
@@ -252,6 +258,14 @@ export class HostNet {
   }
 
   _onHello(conn, msg) {
+    // A removed player's client reconnects on its own schedule, so the block has
+    // to sit at the handshake — anywhere later and the kick would undo itself
+    // within seconds by simply handing them a fresh seat.
+    if (Rules.isKicked(this.state, msg.token)) {
+      this._rejectKicked(conn);
+      return;
+    }
+
     const spectator = !!msg.spectator;
     // Players must choose a name; a spectator (TV) may stay anonymous.
     const name = sanitizeName(msg.name) || (spectator ? 'TV' : '');
@@ -306,13 +320,24 @@ export class HostNet {
     this.opts.onPlayerChange?.();
   }
 
+  // Turn a peer away with an explanation, then hang up. The notice has to go
+  // out before the close or the client just sees a bare drop and reconnects.
+  _rejectKicked(conn) {
+    safeSend(conn, { t: T.KICKED, m: 'The host removed you from the room.' });
+    setTimeout(() => {
+      if (this.destroyed) return;
+      try { conn.close(); } catch { /* ignore */ }
+    }, 250);
+  }
+
   _onAction(conn, msg) {
     const token = this.connPeerToToken.get(conn.peer);
     if (!token) { safeSend(conn, { t: T.ERR, m: 'Re-join required.' }); return; }
     // Remote clients may never invoke host-only controls.
     if (msg.t === T.START || msg.t === T.AGAIN || msg.t === T.NEW_GAME
         || msg.t === T.ADMIN_SET_TEAM || msg.t === T.ADMIN_SET_ROLE
-        || msg.t === T.SET_TIMER || msg.t === T.START_CLOCK) {
+        || msg.t === T.ADMIN_KICK || msg.t === T.SET_TIMER
+        || msg.t === T.START_CLOCK || msg.t === T.SKIP_TURN) {
       safeSend(conn, { t: T.ERR, m: 'Only the host can do that.' });
       return;
     }
@@ -332,6 +357,7 @@ export class HostNet {
       case T.END_TURN: res = Rules.endTurn(this.state, token); break;
       case T.SET_TIMER: res = Rules.setTimerConfig(this.state, msg.patch); break;
       case T.START_CLOCK: res = Rules.startClock(this.state); break;
+      case T.SKIP_TURN: res = Rules.skipTurn(this.state); break;
       default: return { ok: false, error: 'Unknown action.' };
     }
     if (res.ok) {
@@ -350,6 +376,7 @@ export class HostNet {
   localEndTurn() { return this._apply(this.hostToken, { t: T.END_TURN }); }
   localSetTimer(patch) { return this._apply(this.hostToken, { t: T.SET_TIMER, patch }); }
   localStartClock() { return this._apply(this.hostToken, { t: T.START_CLOCK }); }
+  localSkipTurn() { return this._apply(this.hostToken, { t: T.SKIP_TURN }); }
 
   // host-only admin moves (assign any seat from the lobby)
   adminSetTeam(seatId, team) {
@@ -361,6 +388,44 @@ export class HostNet {
     const token = this._tokenForSeat(seatId);
     if (!token) return { ok: false, error: 'No such player.' };
     return this._apply(token, { t: T.SET_ROLE, role });
+  }
+
+  // Remove a player from the room. This does not go through _apply: it needs
+  // the seat id rather than an acting token, and it has to take the connection
+  // down as well as the seat.
+  adminKick(seatId) {
+    const token = this._tokenForSeat(seatId);
+    if (!token) return { ok: false, error: 'No such player.' };
+    const res = Rules.kickSeat(this.state, seatId);
+    if (!res.ok) return res;
+
+    const conn = this.conns.get(token);
+    if (conn) {
+      // Unbind before hanging up, so the resulting 'close' takes the
+      // superseded branch in _onConnClose and can't resurrect a dead seat.
+      this.conns.delete(token);
+      this.connPeerToToken.delete(conn.peer);
+      this.lastRecvByToken.delete(token);
+      this._rejectKicked(conn);
+    }
+    // No grace timer: this seat is not coming back on its own.
+    this._clearGrace(token);
+
+    this._persist();
+    this._broadcast();
+    this.opts.onPlayerChange?.();
+    return res;
+  }
+
+  // Lift a block. They rejoin as a brand-new player on their next attempt,
+  // which their client retries on its own — no action needed on their end.
+  adminUnkick(token) {
+    const res = Rules.unkick(this.state, token);
+    if (!res.ok) return res;
+    this._persist();
+    this._broadcast();
+    this.opts.onPlayerChange?.();
+    return res;
   }
 
   startGame() {
@@ -640,6 +705,12 @@ export class ClientNet {
         break;
       case T.PONG:
         break;
+      case T.KICKED:
+        // Stop everything first: the reconnect loop would otherwise keep
+        // re-dialling a host that is only going to turn us away again.
+        this.destroy();
+        this.opts.onKicked?.(msg.m || 'The host removed you from the room.');
+        break;
       case T.ERR:
         this.opts.onError?.(msg.m || 'Action rejected.');
         if (msg.m && /closed the room/i.test(msg.m)) this.opts.onHostLeft?.();
@@ -759,7 +830,10 @@ export class ClientNet {
   guess(index) { this.send({ t: T.GUESS, index }); }
   endTurn() { this.send({ t: T.END_TURN }); }
 
-  _status(s) { this.opts.onStatus?.(s); }
+  // A torn-down client must stay silent. destroy() closes the connection, whose
+  // 'close' handler fires a tick later — without this guard that would repaint
+  // "Reconnecting…" over a UI that has already left the room.
+  _status(s) { if (this.destroyed) return; this.opts.onStatus?.(s); }
 
   destroy() {
     this.destroyed = true;

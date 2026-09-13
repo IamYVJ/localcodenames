@@ -120,6 +120,13 @@
         </div>
       </section>
 
+      <!-- Host-only: who the host has removed, with a way back in. A kick is a
+           one-tap action on a small button, so it has to be undoable. -->
+      <section id="kicked-controls" class="controls" hidden>
+        <p class="controls__label">Removed</p>
+        <ul id="kicked-list" class="roster roster--bench"></ul>
+      </section>
+
       <!-- Host-only controls -->
       <section id="host-controls" class="controls" hidden>
         <p class="controls__label">Turn timer</p>
@@ -205,6 +212,14 @@
       <!-- Passive waiting state -->
       <section id="waiting-panel" class="panel panel--waiting" hidden>
         <p id="waiting-text" class="panel__hint">Waiting…</p>
+      </section>
+
+      <!-- Host-only turn control. The host is usually NOT the active player, so
+           this can't live inside the role panels — it sits on its own and stays
+           reachable for the whole game. -->
+      <section id="host-turn" class="host-turn" hidden>
+        <button id="btn-skip-turn" class="btn btn--ghost btn--sm">Skip turn</button>
+        <p class="host-turn__hint">Force the current turn to end — for when a player is stuck or away.</p>
       </section>
 
       <!-- Room code, so latecomers and TVs can still join mid-game. Sits last in
