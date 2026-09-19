@@ -11,7 +11,7 @@
 // each WebRTC handshake. After that, gameplay traffic is direct P2P on the LAN.
 // ===========================================================================
 
-const CACHE = 'codenames-v10';
+const CACHE = 'codenames-v11';
 
 // Local app shell (relative to this worker's location).
 const SHELL = [
@@ -45,13 +45,29 @@ const CACHEABLE_HOSTS = new Set([
   'fonts.gstatic.com',
 ]);
 
+// Precache requests MUST bypass the browser's own HTTP cache.
+//
+// cache.add()/addAll() fetch through the normal HTTP cache by default. GitHub
+// Pages serves assets with `Cache-Control: max-age=600`, so a user who reloads
+// within ten minutes of a deploy can have the new worker precache the OLD
+// js/*.js alongside the NEW index.html — a mismatched shell. Because we then
+// serve cache-first, that mismatch is pinned until the next version bump, and
+// it presents as impossible errors ("X is not a function" for a function that
+// plainly exists in the deployed source).
+//
+// 'reload' forces a trip to the network and refreshes the HTTP cache entry on
+// the way past, so every precached file is genuinely the deployed one.
+const noHttpCache = (url) => new Request(url, { cache: 'reload' });
+
 self.addEventListener('install', (event) => {
   event.waitUntil((async () => {
     const cache = await caches.open(CACHE);
     // Shell is atomic — if any local file 404s we want to know.
-    await cache.addAll(SHELL);
+    await cache.addAll(SHELL.map(noHttpCache));
     // External assets are best-effort so a flaky CDN can't break install.
-    await Promise.all(EXTERNAL.map((url) => cache.add(url).catch(() => {})));
+    // These are version-pinned URLs, but a stale entry here is just as sticky,
+    // so they get the same treatment.
+    await Promise.all(EXTERNAL.map((url) => cache.add(noHttpCache(url)).catch(() => {})));
     self.skipWaiting();
   })());
 });

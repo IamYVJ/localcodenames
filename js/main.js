@@ -359,22 +359,29 @@ function setTimer(patch) {
 // host-only: move another player from the lobby
 function doAdmin(seatId, kind, val) {
   if (app.mode !== 'host') return;
-  let r;
-  if (kind === 'team') r = app.host.adminSetTeam(seatId, val === 'none' ? null : val);
-  else if (kind === 'kick') r = doKick(seatId);
-  else r = app.host.adminSetRole(seatId, val);
+  // Kick prompts first and reports for itself, so it owns its own error path.
+  if (kind === 'kick') { doKick(seatId); return; }
+  const r = kind === 'team'
+    ? app.host.adminSetTeam(seatId, val === 'none' ? null : val)
+    : app.host.adminSetRole(seatId, val);
   if (r && !r.ok) UI.toast(r.error);
 }
 
 // The kick button sits inches from the team buttons and is the same size, so a
 // mis-tap is likely — confirm by name before removing anyone.
-function doKick(seatId) {
+async function doKick(seatId) {
   const p = (app.view?.roster || []).find((s) => s.seatId === seatId);
   const name = p?.name || 'this player';
-  if (!window.confirm(`Remove ${name} from the room?`)) return null;
+  const ok = await UI.confirm({
+    title: `Remove ${name}?`,
+    body: 'They lose their seat and cannot rejoin until you allow them back.',
+    confirmLabel: 'Remove',
+    danger: true,
+  });
+  if (!ok) return;
   const r = app.host.adminKick(seatId);
-  if (r && r.ok) UI.toast(`${r.name} was removed.`);
-  return r;
+  if (r && !r.ok) { UI.toast(r.error); return; }
+  UI.toast(`${r.name} was removed.`);
 }
 
 function doUnkick(token) {
@@ -407,9 +414,15 @@ function wireGame() {
     if (r && !r.ok) UI.toast(r.error);
   });
 
-  $('btn-skip-turn').addEventListener('click', () => {
+  $('btn-skip-turn').addEventListener('click', async () => {
     const turn = app.view?.game?.turn;
-    if (!window.confirm(`Skip ${turn ? turn.toUpperCase() : 'this'} team's turn?`)) return;
+    const ok = await UI.confirm({
+      title: `Skip ${turn ? turn.toUpperCase() : 'this'} team's turn?`,
+      body: 'Play passes to the other team immediately.',
+      confirmLabel: 'Skip turn',
+      danger: true,
+    });
+    if (!ok) return;
     const r = app.host?.localSkipTurn();
     if (r && !r.ok) UI.toast(r.error);
   });
@@ -440,7 +453,7 @@ function renderClueCount() {
   $('clue-inf').classList.toggle('stepper__inf--on', app.clueCount === UNLIMITED);
 }
 
-function submitClue() {
+async function submitClue() {
   const wordEl = $('clue-word');
   const word = wordEl.value.trim();
   const warnEl = $('clue-warn');
@@ -452,7 +465,14 @@ function submitClue() {
   const g = app.view && app.view.game;
   if (g) {
     const dup = g.words.some((bw, i) => !g.revealed[i] && bw.toLowerCase() === word.toLowerCase());
-    if (dup && !window.confirm('That clue matches a word still on the board. Give it anyway?')) return;
+    if (dup) {
+      const ok = await UI.confirm({
+        title: 'That word is on the board',
+        body: `"${word.toUpperCase()}" is still face up. Most house rules disallow it.`,
+        confirmLabel: 'Give it anyway',
+      });
+      if (!ok) { wordEl.focus(); return; }
+    }
   }
 
   if (app.mode === 'host') {
@@ -468,17 +488,53 @@ function submitClue() {
   renderClueCount();
 }
 
-function doGuess(index) {
-  if (app.mode === 'host') app.host.localGuess(index);
-  else app.client?.guess(index);
+async function doGuess(index) {
+  // A reveal is irreversible and a mis-tap on a 5x5 grid of same-sized targets is
+  // easy — especially on a phone. The assassin makes one fat finger a lost game,
+  // so make the Operative read the word back before it goes.
+  //
+  // Only Operatives ever reach this: the board is inert for a Spymaster, so
+  // prompting them would be a dead end the rules layer would reject anyway.
+  const you = app.view && app.view.you;
+  if (you && you.role === 'operative') {
+    const word = app.view.game && app.view.game.words[index];
+    const ok = await UI.confirm({
+      title: `Reveal ${word ? word.toUpperCase() : 'this card'}?`,
+      body: 'This cannot be undone.',
+      confirmLabel: 'Reveal',
+    });
+    if (!ok) return;
+
+    // The in-app prompt does not freeze the page the way window.confirm() did,
+    // so the board keeps moving underneath it. Re-check rather than firing a
+    // stale guess that comes back as a confusing error.
+    const g = app.view && app.view.game;
+    if (!g || g.revealed[index] || !g.clue || app.view.you?.team !== g.turn) {
+      UI.toast('Too late — that card is no longer yours to take.');
+      return;
+    }
+  }
+
+  if (app.mode === 'host') {
+    const r = app.host.localGuess(index);
+    if (r && !r.ok) UI.toast(r.error);
+  } else {
+    app.client?.guess(index);
+  }
 }
 
 // =========================================================================
 // leave / teardown
 // =========================================================================
-function leaveRoom() {
+async function leaveRoom() {
   if (app.mode === 'host') {
-    if (!window.confirm('Leave and end the game for everyone?')) return;
+    const ok = await UI.confirm({
+      title: 'Leave and end the game?',
+      body: 'You own the room, so everyone else is disconnected too.',
+      confirmLabel: 'End game',
+      danger: true,
+    });
+    if (!ok) return;
     app.host.endGameForAll();
     Store.clearHostState(app.roomCode);
     Store.clearLastHostRoom();
@@ -494,6 +550,9 @@ function leaveRoom() {
 }
 
 function teardownNet() {
+  // A prompt still on screen refers to a room that no longer exists — drop it,
+  // and settle its promise so the awaiting caller unwinds instead of hanging.
+  UI.closeConfirm();
   // Nobody is in a room any more — stop holding the user's screen awake.
   keepAwake(false);
   try { app.host?.destroy(); } catch { /* ignore */ }
