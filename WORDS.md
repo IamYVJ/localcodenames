@@ -1,0 +1,1090 @@
+# Word meanings
+
+A plain-English meaning for every one of the 1000 words in the Codenames deck.
+
+This file is **reference only**. It is not imported by the app, not precached by the
+service worker, and changing it needs no `sw.js` cache bump. The source of truth for
+the deck itself is `js/words.js`; if you add or remove a word there, update it here too.
+
+Where a word has a second common sense that a spymaster could reasonably clue, it is
+noted after "; also". Those double meanings are the ones that make a card interesting,
+so they are worth knowing before you pick a clue.
+
+
+## A
+
+**abbey** — a monastery or church run by monks or nuns  
+**accordion** — bellows-driven squeezebox instrument played with keys and buttons  
+**acorn** — nut of an oak tree; also a symbol of small beginnings  
+**actor** — person who performs a role in plays or films  
+**airport** — place where planes take off and land  
+**alarm** — warning sound or signal; also a device that wakes you  
+**alley** — narrow lane between buildings; also a bowling lane  
+**alligator** — large armored reptile of southern swamps and rivers  
+**almond** — oval edible nut; also a pale tan color  
+**amber** — fossilized tree resin used in jewelry; also a traffic light  
+**ambulance** — emergency vehicle that carries patients to hospital  
+**anchor** — heavy weight holding a ship in place; also a news presenter  
+**angel** — winged heavenly messenger; also a very kind person  
+**ankle** — joint connecting the foot to the leg  
+**antelope** — swift horned grazing animal of plains and savannas  
+**antenna** — rod that receives radio signals; also an insect's feeler  
+**anvil** — heavy iron block a blacksmith hammers metal on  
+**apple** — round crisp fruit; also the technology company  
+**apricot** — small orange stone fruit; also a pale orange color  
+**apron** — garment worn over clothes to keep them clean  
+**arch** — curved structure spanning an opening; also the foot's curve  
+**arena** — large enclosed space for sports or concerts  
+**arrow** — pointed shaft shot from a bow; also a direction symbol  
+**artist** — person who creates paintings, music, or other art  
+**ash** — powdery residue left after burning; also a hardwood tree  
+**astronaut** — person trained to travel and work in space  
+**attic** — storage space directly under a house roof  
+**aurora** — glowing colored lights in polar night skies  
+**author** — person who writes books or articles  
+**autumn** — season between summer and winter when leaves fall  
+**avalanche** — mass of snow sliding suddenly down a mountain  
+**axe** — bladed tool for chopping wood; also to cut something  
+
+## B
+
+**backpack** — bag with straps carried on the shoulders  
+**bacon** — salted or smoked strips of pork belly  
+**badge** — small emblem showing rank, identity, or membership  
+**bagel** — dense ring-shaped bread roll, boiled then baked  
+**bakery** — shop where bread, cakes, and pastries are sold  
+**ball** — round object used in games; also a formal dance  
+**ballerina** — female ballet dancer, especially a leading one  
+**balloon** — inflatable rubber bag; also a hot air aircraft  
+**bamboo** — fast-growing woody grass with hollow jointed stems  
+**banana** — long curved yellow tropical fruit  
+**bandage** — strip of cloth wrapped around a wound  
+**bandit** — robber, especially one of an armed gang  
+**banjo** — round-bodied stringed instrument used in folk music  
+**banker** — person who works in or runs a bank  
+**banner** — long cloth sign with a slogan; also a web advert  
+**barber** — person whose job is cutting men's hair  
+**barge** — flat-bottomed boat carrying freight on canals  
+**bark** — outer covering of a tree trunk; also a dog's sharp cry  
+**barn** — large farm building for animals or crops  
+**barrel** — large cylindrical cask; also a gun's firing tube  
+**basil** — fragrant green herb used in Italian cooking  
+**basin** — wide bowl for water; also a bowl-shaped land region  
+**basket** — container woven from cane or wicker; also a scored hoop  
+**bass** — low deep sound or voice; also a freshwater fish  
+**bat** — wooden club used in cricket or baseball; also a flying mammal  
+**battery** — portable device storing electrical power  
+**beach** — sandy or pebbled shore beside the sea  
+**beacon** — light or fire used as a guiding signal  
+**beaker** — straight-sided glass used in laboratories  
+**bean** — edible seed in a pod; also a coffee seed  
+**bear** — large heavy furred wild mammal; also to carry or endure  
+**beard** — hair grown on a man's chin and cheeks  
+**beaver** — flat-tailed rodent that builds dams from logs  
+**bed** — piece of furniture for sleeping; also a garden plot  
+**bee** — flying insect that makes honey and pollinates flowers  
+**beetle** — hard-shelled insect; also an old Volkswagen car  
+**bell** — hollow metal object that rings when struck  
+**belt** — strip worn around the waist; also a geographic zone  
+**bench** — long seat for several people; also a judge's seat  
+**beret** — soft flat round cap, often French or military  
+**berry** — small round juicy fruit such as a strawberry  
+**bicycle** — two-wheeled vehicle driven by pedals  
+**biscuit** — small baked cookie or, in America, a soft roll  
+**bishop** — senior church clergyman; also a diagonal chess piece  
+**bison** — large shaggy wild ox of the American plains  
+**blade** — cutting edge of a knife; also a grass leaf  
+**blanket** — thick cloth covering used for warmth on a bed  
+**blazer** — smart tailored jacket, often part of a uniform  
+**blender** — kitchen appliance that purees food with spinning blades  
+**blimp** — small steerable airship filled with gas  
+**blizzard** — severe snowstorm with strong driving winds  
+**block** — solid lump of material; also to obstruct something  
+**blossom** — flower on a fruit tree in spring  
+**blouse** — light shirt-like garment worn by women  
+**board** — flat plank of wood; also a company's directors  
+**boat** — small vessel for travelling on water  
+**bolt** — metal fastening pin; also a lightning flash or to run  
+**bone** — hard piece of the body's skeleton  
+**bonfire** — large outdoor fire for celebration or burning rubbish  
+**bonnet** — brimmed tied hat; also a car's engine cover  
+**book** — bound set of printed pages; also to reserve something  
+**boot** — sturdy shoe covering the ankle; also a car's luggage space  
+**bottle** — narrow-necked glass container for liquids  
+**boulder** — very large rounded rock  
+**bow** — knotted loop of ribbon; also a weapon shooting arrows  
+**bowl** — round deep dish for food; also to roll a ball  
+**box** — stiff container with a lid; also to fight with fists  
+**bracelet** — ornamental band worn around the wrist  
+**brain** — organ inside the skull controlling thought  
+**branch** — limb growing from a tree trunk; also a local office  
+**bread** — staple food baked from flour and water  
+**breeze** — light gentle wind; also something very easy  
+**brick** — rectangular clay block used for building walls  
+**bride** — woman on her wedding day  
+**bridge** — structure carrying a road over water; also a card game  
+**brisket** — cut of beef from the chest, often smoked  
+**broccoli** — green vegetable with a dense flowering head  
+**brooch** — decorative pin fastened to clothing  
+**broom** — long-handled brush for sweeping floors  
+**brownie** — square rich chocolate cake; also a junior girl scout  
+**brush** — tool with bristles for painting or cleaning  
+**bubble** — thin sphere of liquid filled with air  
+**bucket** — open cylindrical container with a handle  
+**buckle** — clasp fastening the two ends of a belt  
+**bud** — small swelling that grows into a flower or leaf  
+**buffalo** — heavy wild ox; also a city in New York  
+**bugle** — small valveless brass horn used for military calls  
+**bulb** — glass globe that gives electric light; also a plant root  
+**bull** — adult male of cattle; also a rising stock market  
+**bungalow** — single-storey detached house  
+**bunker** — underground shelter; also a golf course sand trap  
+**buoy** — floating marker anchored to guide boats  
+**bus** — large road vehicle carrying many passengers  
+**butter** — creamy yellow spread churned from milk; also to flatter someone  
+**button** — small disc fastening clothing; also a knob you press  
+
+## C
+
+**cabin** — small simple wooden house; also the passenger section of a plane  
+**cabinet** — cupboard with shelves for storage; also a government's senior ministers  
+**cable** — thick rope or bundled wire carrying power or signals; also television service  
+**cactus** — spiny desert plant that stores water in its stem  
+**cage** — barred enclosure for holding an animal  
+**cake** — sweet baked dessert, often layered and frosted  
+**calendar** — chart of the days, weeks and months in a year  
+**camel** — humped desert animal used for riding and carrying loads  
+**camera** — device that captures photographs or video  
+**canal** — artificial waterway dug for boats or irrigation  
+**candle** — wax stick with a wick that burns for light  
+**candy** — sweet sugary confection  
+**canister** — small metal or plastic container with a fitted lid  
+**canoe** — narrow light boat paddled with a single-bladed paddle  
+**canvas** — heavy cloth used for sails, tents and paintings  
+**canyon** — deep narrow valley with steep rocky sides  
+**cape** — sleeveless cloak worn over the shoulders; also a headland jutting into sea  
+**captain** — person commanding a ship, team or aircraft  
+**carafe** — open-topped glass bottle for serving wine or water  
+**caramel** — chewy brown candy made from heated sugar  
+**caravan** — group travelling together across a desert; also a towed trailer home  
+**card** — stiff rectangle of paper for playing, greeting or paying  
+**cargo** — goods carried by ship, plane or truck  
+**carpenter** — worker who builds and repairs things in wood  
+**carpet** — thick woven covering laid over a floor  
+**carriage** — horse-drawn passenger vehicle; also a railway car  
+**carrot** — long orange root vegetable; also an incentive offered as reward  
+**cart** — small wheeled vehicle for hauling goods by hand  
+**castle** — fortified stone stronghold of a lord; also the chess rook  
+**cat** — small furry domestic pet that purrs  
+**cathedral** — large principal church housing a bishop's seat  
+**cauldron** — big round metal pot for boiling over a fire  
+**cave** — natural hollow chamber in rock or a hillside  
+**cavern** — large deep underground cave  
+**celery** — crisp pale green stalk vegetable  
+**cello** — large bowed string instrument played while seated  
+**cereal** — grain-based breakfast food eaten with milk  
+**chain** — connected series of metal links; also a group of shops  
+**chair** — seat with a back for one person; also a meeting's presider  
+**chalet** — wooden alpine house with a steep overhanging roof  
+**chalk** — soft white stone used for writing on boards  
+**chapel** — small building or room used for worship  
+**chariot** — two-wheeled horse-drawn cart used in ancient racing and war  
+**cheek** — fleshy side of the face below the eye; also impudent boldness  
+**cheese** — firm food made from pressed curdled milk; also said before photos  
+**chef** — professional cook who runs a kitchen  
+**cherry** — small round red stone fruit; also the perfect finishing touch  
+**chess** — board game of kings, knights and checkmate  
+**chicken** — farm bird raised for eggs and meat; also a coward  
+**chickpea** — round tan legume used in hummus and curries  
+**chili** — spicy hot pepper pod; also a stew of beans and meat  
+**chimney** — vertical flue carrying smoke out of a building  
+**chip** — thin fried slice of potato; also a silicon microchip  
+**chisel** — bladed hand tool struck to carve wood or stone  
+**chocolate** — sweet brown food made from roasted cacao beans  
+**choir** — organised group of people who sing together  
+**chord** — several musical notes sounded at once; also a line across a circle  
+**cilantro** — pungent green herb, the leaf of the coriander plant  
+**cinnamon** — sweet warm brown spice taken from tree bark  
+**circle** — round shape with every point equally far from the centre  
+**circus** — travelling show with clowns, acrobats and a big top  
+**citadel** — fortress guarding and overlooking a city  
+**city** — large permanent settlement where many people live  
+**clamp** — device that grips and holds things tightly together  
+**clarinet** — black woodwind instrument played with a single reed  
+**cleats** — studded sports shoes worn for grip on grass  
+**cliff** — steep vertical face of rock, often by the sea  
+**cloak** — loose sleeveless outer garment; also to conceal something  
+**clock** — device that shows the time of day  
+**closet** — small storage room for clothes; also a hidden secret  
+**cloud** — visible mass of water vapour in the sky; also online storage  
+**clover** — three-leaved meadow plant long linked with luck  
+**clown** — circus performer in makeup who does silly antics  
+**coach** — person who trains a sports team; also a long-distance bus  
+**coast** — land bordering the sea; also to glide along without effort  
+**coat** — outer garment worn over other clothes; also a layer of paint  
+**cobbler** — shoemaker who mends shoes; also a baked fruit dessert  
+**cobra** — venomous snake that rears and spreads a hood  
+**coconut** — large brown palm fruit with white flesh and milk  
+**cocoon** — silk case a caterpillar spins around itself  
+**coil** — length of rope or wire wound into loops  
+**coin** — flat metal disc used as money  
+**colander** — perforated bowl for draining water from food  
+**collar** — band of a shirt around the neck; also a dog's neckband  
+**comb** — toothed tool for tidying hair; also the bees' honeycomb  
+**comet** — icy body orbiting the sun with a glowing tail  
+**compass** — needle instrument that shows north; also a tool for drawing circles  
+**computer** — electronic machine that stores and processes information  
+**cone** — tapering solid with a round base; also an ice cream holder  
+**convoy** — group of vehicles or ships travelling together for safety  
+**cookie** — small sweet baked biscuit; also a browser data file  
+**copper** — reddish metal used in wiring and coins; also slang for policeman  
+**coral** — stony reef structure built by tiny sea animals; also pinkish orange  
+**cork** — bottle stopper cut from spongy tree bark  
+**corn** — tall grain plant bearing yellow kernels on cobs  
+**costume** — outfit worn to look like someone or something else  
+**cottage** — small cosy house in the country  
+**cotton** — soft white plant fibre spun into thread and cloth  
+**couch** — long padded seat for several people  
+**cougar** — large tawny wild cat of the Americas  
+**cow** — female cattle animal kept for milk  
+**coyote** — wolflike wild dog of North America  
+**crab** — sideways-walking sea creature with claws and a hard shell  
+**cracker** — thin crisp savoury biscuit; also a pull-apart Christmas favour  
+**cradle** — small rocking bed for a baby  
+**crane** — tall machine for lifting heavy loads; also a long-legged wading bird  
+**crater** — bowl-shaped hollow left by an impact or volcano  
+**crayon** — coloured wax stick used for drawing  
+**cream** — thick fatty top layer of milk; also the very best of something  
+**cricket** — chirping jumping insect; also the bat-and-ball sport  
+**crown** — jewelled headpiece worn by a monarch; also the top of the head  
+**crutch** — padded stick under the arm supporting an injured walker  
+**crystal** — clear mineral with a regular geometric form; also fine cut glass  
+**cube** — solid block with six equal square faces  
+**cucumber** — long green watery vegetable eaten in salads  
+**cup** — small open vessel for drinking; also a sporting trophy  
+**curry** — spiced saucy dish of South Asian origin  
+**curtain** — hanging cloth that covers a window or stage  
+**cushion** — soft padded bag for sitting or leaning on  
+**cyclone** — violently rotating storm system with destructive winds  
+**cymbal** — round brass percussion plate struck or clashed together  
+
+## D
+
+**dagger** — short pointed knife carried as a weapon  
+**daisy** — small white flower with a bright yellow centre  
+**dam** — barrier built across a river to hold back water  
+**dancer** — person who moves rhythmically to music  
+**dart** — small pointed missile thrown at a board; also to move suddenly and quickly  
+**dawn** — first light of morning; also the beginning of something  
+**decanter** — glass bottle for serving wine or spirits  
+**deer** — hoofed forest animal, males often antlered  
+**denim** — sturdy blue cotton fabric used for jeans  
+**dentist** — doctor who treats teeth and gums  
+**desert** — dry barren land with little rainfall; also to abandon one's post  
+**desk** — table for writing, reading, or office work  
+**detective** — investigator who solves crimes; also Sherlock Holmes  
+**dew** — droplets of moisture that form overnight on surfaces  
+**diamond** — hardest gemstone, prized clear crystal; also a card suit or baseball infield  
+**dice** — small cubes rolled for numbers in games  
+**diner** — casual American roadside restaurant; also a person eating a meal  
+**dinghy** — small open boat, often a ship's tender  
+**dinosaur** — extinct giant prehistoric reptile; also something hopelessly outdated  
+**discus** — heavy disc thrown in track and field  
+**dock** — platform where boats load and unload; also the defendant's box in court  
+**doctor** — person trained to treat the sick  
+**dolphin** — intelligent sea mammal with a beaked snout  
+**domino** — small rectangular tile with dots, used in games; also a chain reaction  
+**donkey** — small long-eared relative of the horse  
+**door** — hinged panel for entering or leaving a room  
+**dove** — small pale pigeon, symbol of peace  
+**dragon** — mythical fire-breathing winged reptile  
+**drawer** — sliding box-like compartment in a desk or chest; also one who draws  
+**dress** — one-piece garment worn mainly by women; also to put on clothes  
+**drill** — tool that bores holes; also a repeated training exercise  
+**drizzle** — light fine rain; also to trickle liquid over food  
+**drone** — remote-controlled flying craft; also a low humming sound  
+**drum** — hollow instrument struck with sticks or hands; also a large cylindrical barrel  
+**duck** — common waterbird with webbed feet and a bill; also to dodge downward  
+**dugout** — sheltered bench area for a baseball team; also a hollowed-log canoe  
+**duke** — nobleman of the highest rank below prince  
+**dune** — hill of sand shaped by wind  
+**dungeon** — dark underground prison beneath a castle  
+**dusk** — dim light just after sunset  
+
+## E
+
+**eagle** — large powerful bird of prey; also two under par in golf  
+**ear** — organ of hearing on the head; also a head of corn  
+**earth** — the planet we live on; also soil or ground  
+**easel** — standing frame that holds an artist's canvas  
+**eel** — long snakelike fish  
+**egg** — oval shell laid by birds, eaten as food; also to urge on  
+**elbow** — joint in the middle of the arm; also to shove aside  
+**elephant** — huge grey mammal with trunk and tusks  
+**elevator** — cab that carries people between building floors  
+**elf** — small magical humanlike creature of folklore  
+**elk** — large deer with broad spreading antlers  
+**ember** — glowing fragment left from a dying fire  
+**emperor** — supreme ruler of an empire; also a large penguin species  
+**engine** — machine that converts fuel into motion  
+**engineer** — person who designs or builds machines and structures; also a train driver  
+**envelope** — paper cover for mailing a letter; also the limits of what's possible  
+**eraser** — rubber tool for rubbing out pencil marks  
+**escalator** — moving staircase carrying people between floors  
+**explorer** — person who travels to discover unknown places  
+
+## F
+
+**factory** — building where goods are manufactured  
+**falcon** — swift hunting bird of prey  
+**fan** — device that blows air to cool; also a devoted admirer  
+**fang** — long sharp tooth of a snake or wolf  
+**farm** — land used for growing crops and raising animals  
+**faucet** — tap controlling water flow from a pipe  
+**feather** — light plume covering a bird's body  
+**fedora** — soft felt hat with a creased crown  
+**fence** — barrier of posts and wire around land; also one who trades stolen goods  
+**fern** — leafy green plant with fronds, no flowers  
+**ferry** — boat that carries people across water regularly  
+**fiddle** — violin, especially in folk music; also to tamper or fidget with  
+**field** — open stretch of land for crops or sport; also an area of study  
+**fig** — soft sweet fruit full of tiny seeds  
+**finch** — small seed-eating songbird with a stout beak  
+**finger** — one of five digits on the hand; also to point someone out  
+**fire** — burning flame giving heat and light; also to dismiss from a job  
+**fish** — cold-blooded water animal with gills and fins; also to angle for something  
+**fjord** — long narrow sea inlet between steep cliffs  
+**flag** — cloth banner symbolizing a nation or group; also to tire or signal  
+**flame** — visible burning tongue of fire; also an old sweetheart  
+**flamingo** — tall pink wading bird with long legs  
+**flask** — small flat bottle for carrying liquid  
+**fleet** — group of ships under one command; also swift-moving  
+**flood** — overflow of water covering dry land; also an overwhelming quantity  
+**flour** — powder ground from grain for baking  
+**flower** — colorful blooming part of a plant  
+**flute** — slender woodwind played sideways; also a tall champagne glass  
+**fog** — thick cloud of mist near the ground; also mental confusion  
+**folder** — cover for holding loose papers; also a computer directory  
+**forest** — large area densely covered with trees  
+**fork** — utensil with prongs for eating; also a point where a road splits  
+**fort** — fortified military stronghold  
+**fossil** — preserved remains of an ancient organism in rock; also an old-fashioned person  
+**fountain** — jet of water in a decorative basin; also a source of something  
+**fox** — wild bushy-tailed dog-like animal; also a cunning person  
+**frame** — rigid border around a picture; also to falsely incriminate  
+**freckle** — small brown spot on the skin  
+**frog** — small jumping amphibian that croaks; also a lump in the throat  
+**frost** — thin white ice coating on cold surfaces  
+**funnel** — cone with a tube for pouring liquids; also a ship's smokestack  
+**furnace** — enclosed chamber that burns fuel for heat  
+
+## G
+
+**galaxy** — vast system of stars held by gravity  
+**garage** — building for parking or repairing cars  
+**garden** — plot of ground for growing plants  
+**garlic** — pungent bulb used to flavor food  
+**gate** — hinged barrier in a fence or wall; also an airport boarding point  
+**gazelle** — slender swift antelope of Africa  
+**gear** — toothed wheel that transmits motion; also equipment or kit  
+**gecko** — small tropical lizard that climbs walls  
+**gelato** — dense Italian-style ice cream  
+**genie** — magical spirit released from a lamp  
+**geyser** — hot spring that shoots water skyward  
+**ghost** — spirit of a dead person; also to cut off contact suddenly  
+**giant** — enormously large person or creature  
+**ginger** — spicy knobbly root used in cooking; also red hair  
+**giraffe** — tallest animal, with a very long neck  
+**glacier** — slow-moving mass of ice on land  
+**gladiator** — armed fighter in ancient Roman arenas  
+**glass** — hard transparent material for windows; also a drinking vessel  
+**glove** — hand covering with separate fingers; also a baseball mitt  
+**glue** — sticky substance that bonds things together  
+**goalie** — player who guards the goal in sport  
+**goat** — horned farm animal that climbs and browses; also greatest of all time  
+**goblin** — small ugly mischievous creature of folklore  
+**goggles** — protective eyewear sealed around the eyes  
+**gold** — precious yellow metal used for coins and jewelry; also first place  
+**gondola** — flat-bottomed Venetian canal boat; also a cable car cabin  
+**goose** — large waterbird with long neck and webbed feet  
+**gorge** — narrow steep-sided valley; also to eat greedily  
+**gorilla** — largest ape, native to African forests  
+**gown** — long flowing dress or formal robe  
+**granola** — baked mix of oats, nuts and honey  
+**grape** — small juicy berry grown in bunches for wine  
+**grass** — green ground-covering plant of lawns and fields  
+**grater** — kitchen tool with rough holes for shredding food  
+**grave** — plot where a dead body is buried; also serious  
+**gravel** — loose small stones used on paths and roads  
+**grill** — metal grate for cooking food over heat; also to question  
+**guard** — person who protects a place; also to defend  
+**guitar** — stringed instrument played by strumming or plucking  
+**gull** — noisy grey and white seabird of coasts  
+**gym** — room or building equipped for exercise  
+
+## H
+
+**hail** — frozen rain falling as ice pellets; also to greet  
+**hallway** — passage connecting rooms inside a building  
+**hammer** — tool with heavy head for driving nails  
+**hammock** — hanging bed of net slung between two supports  
+**hamster** — small pet rodent with cheek pouches  
+**hand** — body part at the end of the arm; also clock pointer  
+**hanger** — shaped frame for hanging clothes in a closet  
+**harbor** — sheltered water where ships dock; also to shelter someone  
+**harmonica** — small mouth organ played by blowing and drawing  
+**harness** — straps fastening an animal or person for control  
+**harp** — large triangular instrument with strings plucked by hand  
+**hat** — covering worn on the head  
+**hawk** — sharp-eyed bird of prey; also someone favoring war  
+**hay** — dried grass stored as feed for farm animals  
+**heart** — organ that pumps blood; also the symbol of love  
+**heater** — device that warms a room or liquid  
+**hedge** — row of bushes forming a boundary; also to limit risk  
+**heel** — back part of the foot; also a shoe's raised part  
+**helmet** — hard protective covering worn on the head  
+**hen** — adult female chicken  
+**hermit** — person who lives alone away from society  
+**heron** — long-legged wading bird that hunts fish  
+**highway** — main road for fast long-distance travel  
+**hill** — raised area of land smaller than a mountain  
+**hinge** — joint letting a door or lid swing open  
+**hippo** — huge African river mammal with a wide mouth  
+**hive** — structure housing a bee colony; also a busy place  
+**honey** — sweet syrup made by bees; also a term of affection  
+**hoof** — hard foot covering of horses, cattle and deer  
+**hook** — bent metal piece for catching or hanging; also boxing punch  
+**horn** — hard pointed growth on an animal's head; also brass instrument  
+**horse** — large animal ridden and used for farm work  
+**hose** — flexible tube for carrying water  
+**hospital** — place where sick people receive medical treatment  
+**hotel** — building providing rooms for paying travelers  
+**hound** — hunting dog with a keen nose; also to pursue relentlessly  
+**house** — building where people live  
+**hunter** — person who chases and kills wild animals  
+**hurdle** — barrier jumped in a race; also an obstacle to overcome  
+**hurricane** — violent tropical storm with spiraling winds and rain  
+**hut** — small simple shelter or rough cabin  
+**hyena** — scavenging African mammal known for its laughing call  
+
+## I
+
+**iceberg** — huge floating mass of sea ice; also a lettuce type  
+**icicle** — hanging spike of ice formed by dripping water  
+**igloo** — dome shelter built from blocks of snow  
+**iguana** — large tropical lizard with a spiny crest  
+**ink** — colored liquid used for writing and printing; also octopus fluid  
+**iron** — hard grey metal; also a device for pressing clothes  
+**island** — land surrounded entirely by water  
+**ivory** — hard creamy material of elephant tusks; also piano keys  
+
+## J
+
+**jacket** — short coat worn over other clothes; also a book cover  
+**jaguar** — spotted big cat of the Americas; also a car brand  
+**jar** — wide-mouthed glass container with a lid  
+**javelin** — light spear thrown for distance in athletics  
+**jaw** — bone framing the mouth and holding the teeth  
+**jeans** — casual trousers made of sturdy denim  
+**jeep** — rugged open vehicle built for rough ground  
+**jelly** — wobbly sweet dessert; also a smooth fruit spread  
+**jersey** — knitted sports shirt or pullover; also a cow breed  
+**jester** — court entertainer who joked and clowned for a king  
+**jet** — aircraft driven by jet engines; also a forceful stream  
+**jewel** — precious cut stone set in rings and crowns  
+**judge** — official who decides cases in court; also to form opinions  
+**jug** — deep container with a handle for pouring liquids  
+**jungle** — dense tropical forest with tangled vegetation  
+
+## K
+
+**kangaroo** — hopping Australian marsupial that carries young in a pouch  
+**kayak** — narrow canoe paddled with a double-bladed paddle  
+**ketchup** — thick sweet tomato sauce  
+**kettle** — covered pot with a spout for boiling water  
+**key** — shaped metal piece that opens a lock; also musical scale  
+**kilt** — pleated tartan skirt worn by Scottish men  
+**kingdom** — country ruled by a king or queen; also biological grouping  
+**kitchen** — room where food is prepared and cooked  
+**kite** — light frame flown on a string; also a hovering hawk  
+**kitten** — young cat, not yet fully grown  
+**knee** — joint in the middle of the leg  
+**knife** — tool with a sharp blade for cutting  
+**knight** — armored medieval warrior on horseback; also a chess piece  
+**knot** — fastening made by tying rope; also a ship's speed unit  
+**koala** — tree-dwelling Australian marsupial that eats eucalyptus leaves  
+
+## L
+
+**label** — tag giving information about an item; also a record company  
+**lace** — delicate openwork fabric; also a cord tying a shoe  
+**ladder** — frame of rungs used for climbing up  
+**ladle** — long-handled deep spoon for serving soup  
+**lagoon** — shallow lake separated from the sea by sand  
+**lake** — large body of water surrounded by land  
+**lamp** — device that gives light in a room  
+**lance** — long spear carried by a mounted knight  
+**lantern** — portable case holding a light or candle  
+**laptop** — portable computer with a folding screen  
+**laser** — narrow intense beam of concentrated light  
+**lava** — molten rock flowing from an erupting volcano  
+**lawyer** — professional who advises clients and argues cases in court  
+**leaf** — flat green growth on a plant stem; also book page  
+**leather** — animal hide treated for clothing, shoes and furniture  
+**leg** — limb used for standing and walking; also a journey stage  
+**lemon** — sour yellow citrus fruit; also a faulty car  
+**lemur** — big-eyed primate found only on Madagascar  
+**lens** — curved glass that focuses light; also part of the eye  
+**lentil** — small flat dried pulse cooked in soups and stews  
+**leopard** — spotted big cat of Africa and Asia  
+**letter** — written message sent by mail; also an alphabet character  
+**lettuce** — leafy green vegetable eaten raw in salads  
+**lever** — bar pivoted to lift or move a load  
+**library** — place where books are kept and borrowed  
+**lighthouse** — coastal tower whose light warns passing ships  
+**lily** — showy trumpet-shaped garden flower  
+**lime** — small green citrus fruit; also white mineral for cement  
+**lion** — large big cat; males have a shaggy mane  
+**lizard** — small scaly reptile with four legs and tail  
+**llama** — shaggy South American pack animal related to the camel  
+**lobby** — entrance hall of a building; also to pressure lawmakers  
+**lobster** — large marine shellfish with claws, eaten as seafood  
+**lock** — fastening device opened with a key; also a canal chamber  
+**lodge** — small country house or inn; also a beaver's den  
+**log** — cut length of tree trunk; also a record of events  
+**lotus** — floating water lily sacred in Asian traditions  
+**luggage** — bags and suitcases carried when traveling  
+**lung** — organ in the chest used for breathing  
+**lynx** — wild cat with tufted ears and a short tail  
+
+## M
+
+**magician** — performer of tricks and illusions; also a sorcerer  
+**magnet** — iron object that attracts metal; also a strong attraction  
+**magpie** — black and white bird known for collecting shiny things  
+**mallet** — hammer with a large wooden head  
+**mammoth** — extinct shaggy elephant of the ice age; also enormous  
+**mandolin** — small stringed instrument played with a pick  
+**mango** — sweet tropical fruit with orange flesh and large pit  
+**mansion** — very large and impressive house  
+**map** — drawing of an area showing roads and features  
+**maple** — tree with lobed leaves yielding sweet syrup  
+**marble** — small glass ball used in games; also polished stone  
+**market** — place where goods are bought and sold  
+**marsh** — low wet land with grasses and standing water  
+**mask** — covering worn over the face; also to hide something  
+**mast** — tall upright pole carrying a ship's sails  
+**mattress** — padded pad on a bed frame for sleeping  
+**mayor** — elected head of a town or city  
+**maze** — network of confusing paths designed to puzzle  
+**meadow** — open field of grass and wildflowers  
+**mechanic** — person who repairs engines and machines  
+**medal** — metal disc awarded for achievement or bravery  
+**melon** — large sweet juicy fruit with rind and seeds  
+**merchant** — person who buys and sells goods for profit  
+**mermaid** — mythical sea creature, woman above and fish below  
+**meteor** — streak of light from space rock burning in the atmosphere  
+**microscope** — instrument that magnifies very small objects  
+**milk** — white drink from cows; also to extract or exploit  
+**mill** — building where grain is ground into flour; also a factory  
+**mine** — underground excavation for coal or ore; also buried explosive  
+**mint** — herb with cool fresh flavor; also where coins are made  
+**mirror** — polished glass surface that reflects an image  
+**mist** — thin cloud of tiny water droplets near the ground  
+**mitten** — winter hand covering with one section for the fingers  
+**moat** — water filled ditch encircling a castle  
+**moccasin** — soft leather shoe; also a venomous American snake  
+**mole** — small burrowing animal; also a spy inside an organization  
+**mongoose** — small agile mammal famed for fighting snakes  
+**monitor** — computer display screen; also to watch and check  
+**monk** — man living in a religious community under vows  
+**monkey** — agile tree dwelling primate with a tail  
+**monsoon** — seasonal wind bringing heavy tropical rains  
+**moon** — earth's natural satellite seen shining at night  
+**moose** — largest deer, with broad flat antlers  
+**mop** — floor cleaning tool with absorbent head on a stick  
+**mosque** — Muslim place of worship  
+**mosquito** — small biting insect that spreads disease  
+**moss** — soft green plant growing on damp stones  
+**moth** — dull winged night insect drawn to lamps  
+**mountain** — very high steep landform rising above its surroundings  
+**mouse** — small gnawing rodent; also handheld computer pointing device  
+**muffin** — small domed baked cake, often with berries  
+**mug** — large handled cup; also to rob someone in public  
+**mule** — offspring of a donkey and horse; also stubborn person  
+**museum** — building displaying art, history, or scientific collections  
+**mushroom** — fleshy fungus with cap and stalk; also to grow rapidly  
+**mustard** — yellow spicy condiment made from ground seeds  
+
+## N
+
+**nail** — thin metal spike hammered into wood; also fingertip covering  
+**napkin** — cloth or paper square for wiping at meals  
+**narwhal** — arctic whale with a long spiral tusk  
+**necktie** — strip of cloth knotted at the collar  
+**needle** — thin pointed tool for sewing or injections  
+**nest** — bird's structure of twigs for holding eggs  
+**net** — mesh for catching fish; also the goal in sports  
+**newt** — small amphibian resembling a lizard with moist skin  
+**nomad** — person who wanders rather than settling in one place  
+**noodle** — strip of pasta boiled in soup; also slang for head  
+**nose** — facial organ for smelling and breathing  
+**note** — short written message; also a single musical tone  
+**nurse** — person who cares for the sick in hospitals  
+
+## O
+
+**oak** — sturdy hardwood tree that bears acorns  
+**oar** — long pole with flat blade for rowing  
+**oasis** — fertile watered spot in a desert  
+**oatmeal** — hot porridge made from rolled oats  
+**ocean** — vast body of salt water covering the earth  
+**octopus** — eight armed sea creature with a soft body  
+**olive** — small oily fruit; also a dull green color  
+**omelet** — beaten eggs cooked flat and folded over a filling  
+**onion** — pungent layered bulb used in cooking  
+**opera** — dramatic stage work in which the story is sung  
+**orbit** — curved path of one body circling another  
+**orchard** — planted grove of fruit trees  
+**oregano** — aromatic herb used in Italian cooking  
+**organ** — keyboard instrument with pipes; also a body part  
+**ostrich** — huge flightless African bird that runs fast  
+**otter** — playful river mammal with sleek fur  
+**ottoman** — padded footstool; also the old Turkish empire  
+**oven** — enclosed chamber for baking and roasting food  
+**overalls** — loose work trousers with a bib and straps  
+**owl** — nocturnal bird of prey with large eyes  
+**ox** — large castrated bull used for pulling loads  
+**oyster** — rough shelled sea mollusk that can contain pearls  
+
+## P
+
+**paddle** — short oar for a canoe; also a table tennis bat  
+**painter** — artist who paints; also worker who coats walls  
+**pajamas** — loose soft clothes worn for sleeping  
+**palace** — grand official home of a ruler  
+**palm** — inner surface of the hand; also a tropical tree  
+**panda** — black and white Chinese bear that eats bamboo  
+**pansy** — garden flower with broad velvety petals  
+**panther** — large black wild cat of the leopard family  
+**pants** — garment covering the legs and lower body  
+**paper** — thin sheet for writing; also a newspaper  
+**paprika** — red spice ground from dried sweet peppers  
+**parachute** — fabric canopy slowing a fall from an aircraft  
+**parka** — hooded winter coat lined for warmth  
+**parrot** — colorful tropical bird that mimics speech  
+**parsley** — green leafy herb used as a garnish  
+**pasta** — Italian noodles made from wheat dough  
+**pasture** — grassy field where livestock graze  
+**paw** — foot of an animal with claws or pads  
+**pawn** — lowest chess piece; also to leave goods for a loan  
+**peach** — fuzzy sweet orange fruit with a stone  
+**peacock** — male bird with a huge iridescent fan tail  
+**peanut** — legume nut in a shell, ground into butter  
+**pear** — sweet fruit narrow at the top and round below  
+**pearl** — smooth white gem formed inside an oyster shell  
+**pebble** — small smooth stone worn round by water  
+**pedal** — foot lever on a bike, car, or piano; also to cycle  
+**pelican** — large water bird with a huge throat pouch  
+**pencil** — writing tool with a graphite core in wood  
+**penguin** — flightless black-and-white seabird of the southern hemisphere  
+**pepper** — spice ground from peppercorns; also a sweet or chili vegetable  
+**periscope** — tube of mirrors for seeing above, as from a submarine  
+**pharaoh** — ruler of ancient Egypt  
+**phone** — handheld device for calls and messages; also to call someone  
+**piano** — large keyboard instrument with hammered strings  
+**pickle** — cucumber preserved in brine; also a difficult situation  
+**pier** — platform built out over water for boats or strolling  
+**pigeon** — common grey city bird; also a gullible person  
+**pillar** — tall vertical support column; also a key member of a group  
+**pillow** — soft cushion supporting the head in bed  
+**pilot** — person who flies an aircraft; also a first test episode  
+**pine** — evergreen cone-bearing tree with needles; also to long for  
+**pipe** — tube carrying water or gas; also a smoking tool  
+**pirate** — robber who attacks ships; also one who copies media illegally  
+**pistol** — small handgun fired with one hand  
+**pitcher** — jug for pouring liquid; also the baseball player who throws  
+**pizza** — flat baked dough with tomato, cheese, and toppings  
+**planet** — large body orbiting a star, like Earth or Mars  
+**plank** — long flat board of timber; also a core-strengthening exercise  
+**plate** — flat dish for food; also a sheet of metal or armor  
+**plaza** — open public square in a town or city  
+**pliers** — hinged tool for gripping and bending things  
+**plug** — electrical connector with prongs; also a stopper for a drain  
+**plum** — sweet purple stone fruit; also a highly desirable job  
+**pocket** — small fabric pouch sewn into clothing for carrying things  
+**podium** — raised platform for a speaker or medal winners  
+**pollen** — fine powder plants use to fertilize other flowers  
+**poncho** — sleeveless cloak with a hole for the head  
+**pond** — small body of still fresh water  
+**pony** — small horse breed; also a ponytail hairstyle  
+**porch** — covered entrance area attached to the front of a house  
+**possum** — nocturnal marsupial that fakes death when threatened  
+**potato** — starchy edible tuber eaten boiled, mashed, or fried  
+**pottery** — objects shaped from clay and hardened by firing  
+**prairie** — wide flat grassland, especially in North America  
+**pretzel** — knotted salted bread snack baked crisp or soft  
+**priest** — ordained religious leader who performs ceremonies  
+**prince** — son of a monarch; also the musician Prince  
+**printer** — machine that puts text and images onto paper  
+**prism** — transparent glass shape that splits light into colors  
+**prison** — building where criminals are locked up as punishment  
+**pudding** — soft sweet dessert; also British term for any dessert course  
+**puddle** — small shallow pool of rainwater on the ground  
+**puffin** — small sea bird with a colorful triangular beak  
+**pulley** — grooved wheel with a rope for lifting loads  
+**pump** — device for moving liquid or air; also a slip-on shoe  
+**pumpkin** — large orange gourd carved at Halloween  
+**puppet** — figure moved by strings or a hand; also a controlled person  
+**puppy** — young dog  
+**purse** — small bag for money or a woman's handbag  
+**puzzle** — game testing cleverness, like a jigsaw; also to confuse someone  
+**pyramid** — huge stone tomb in Egypt with triangular sides  
+**python** — very large constricting snake; also a programming language  
+
+## Q
+
+**quail** — small ground bird hunted for meat; also to flinch in fear  
+**quartz** — hard crystal mineral used in watches and jewelry  
+**queen** — female monarch; also a chess piece or a bee  
+**quill** — bird feather used as an old pen; also a porcupine spine  
+**quilt** — thick padded bed cover stitched in patterned layers  
+**quinoa** — small edible seed cooked and eaten like a grain  
+
+## R
+
+**rabbit** — small long-eared mammal that burrows and hops  
+**raccoon** — masked nocturnal mammal with a ringed bushy tail  
+**racket** — stringed bat for tennis; also a loud noise or a scam  
+**racquet** — stringed bat used in squash and tennis  
+**radar** — system detecting objects by bouncing radio waves  
+**radish** — small peppery red root vegetable eaten raw  
+**raft** — flat floating platform of logs or inflated rubber  
+**rail** — metal bar train wheels run on; also a handrail  
+**rain** — water falling in drops from clouds  
+**rake** — long-handled tool with tines for gathering leaves  
+**ram** — male sheep with curled horns; also to crash into forcefully  
+**ranch** — large farm for raising cattle or horses  
+**ranger** — officer who patrols a park or forest; also an elite soldier  
+**ratchet** — toothed mechanism allowing motion in only one direction  
+**raven** — large glossy black crow; also the Poe poem  
+**razor** — sharp blade for shaving hair  
+**reef** — ridge of coral or rock just below the sea surface  
+**referee** — official who enforces the rules during a sports match  
+**reindeer** — antlered arctic deer that pulls Santa's sleigh  
+**relish** — tangy pickled condiment; also great enjoyment of something  
+**rhino** — huge thick-skinned animal with a horn on its nose  
+**ribbon** — narrow strip of fabric used for tying or decoration  
+**rice** — staple grain grown in flooded paddies  
+**rickshaw** — small passenger cart pulled or pedaled by a person  
+**ridge** — long narrow raised crest of a hill or roof  
+**ring** — circular band worn on a finger; also a boxing arena  
+**ripple** — small wave spreading across a water surface  
+**river** — large natural stream flowing toward the sea  
+**road** — paved route for vehicles between places  
+**robe** — long loose garment worn as a bathrobe or for ceremony  
+**robin** — small songbird with a red breast  
+**robot** — machine built to perform tasks automatically  
+**rocket** — vehicle launched into space by burning fuel; also to soar  
+**rooster** — adult male chicken that crows at dawn  
+**root** — underground part of a plant; also an origin or source  
+**rope** — thick cord of twisted fibers  
+**rose** — thorny shrub with fragrant showy flowers; also past tense of rise  
+**router** — device sharing internet across a network; also a woodworking cutter  
+**ruby** — deep red precious gemstone  
+**rudder** — hinged blade at the stern used to steer a boat  
+**rug** — thick woven floor mat  
+**ruins** — remains of collapsed ancient buildings  
+**ruler** — marked strip for measuring length; also a monarch who governs  
+
+## S
+
+**sable** — glossy dark fur from a marten; also a deep black color  
+**saddle** — leather seat strapped on a horse or bicycle  
+**saffron** — costly orange spice from crocus flower threads  
+**sail** — sheet of canvas catching wind to drive a boat  
+**salmon** — pink-fleshed fish that swims upstream to spawn  
+**salt** — white crystal mineral used to season food  
+**samurai** — warrior of feudal Japan who followed a strict code  
+**sand** — loose grains of worn rock covering beaches and deserts  
+**sandal** — open shoe held on by straps  
+**sapphire** — precious blue gemstone  
+**sardine** — small oily fish packed tightly into tins  
+**satellite** — object orbiting a planet, natural or built for signals  
+**saucer** — small shallow dish placed under a cup; also a UFO shape  
+**sausage** — seasoned ground meat stuffed into a casing  
+**savanna** — tropical grassland with scattered trees  
+**saw** — toothed blade for cutting wood; also past tense of see  
+**saxophone** — curved brass wind instrument with a reed  
+**scale** — device for weighing; also a fish's plate or a music series  
+**scallop** — edible shellfish with a fan-shaped ribbed shell; also a curved edge  
+**scarf** — length of cloth worn around the neck  
+**school** — place where children are taught; also a large group of fish  
+**schooner** — sailing ship with two or more masts; also a tall glass  
+**scientist** — person who studies or practices science  
+**scissors** — cutting tool with two pivoted blades  
+**scooter** — small two-wheeled vehicle, pushed by foot or motorized  
+**scorpion** — desert arachnid with pincers and a stinging tail  
+**screw** — threaded metal fastener driven into wood; also to botch something  
+**seal** — sea mammal with flippers; also a stamp or airtight closure  
+**seaweed** — marine algae growing along oceans and shores  
+**sedan** — enclosed car with four doors and a separate trunk  
+**seed** — small plant germ that grows into a plant; also tournament ranking  
+**shadow** — dark shape cast when something blocks light; also to follow closely  
+**shampoo** — liquid soap for washing hair  
+**shark** — large predatory fish with sharp teeth; also a ruthless dealer  
+**shawl** — large cloth draped over the shoulders  
+**shed** — small storage building in a yard; also to drop off  
+**sheep** — woolly farm animal raised for wool and meat; also meek follower  
+**shell** — hard outer covering of a nut or mollusk; also artillery round  
+**shepherd** — person who tends sheep; also to guide a group  
+**sheriff** — elected county law officer  
+**shield** — protective plate carried in battle; also to protect from harm  
+**ship** — large seagoing vessel; also to send goods somewhere  
+**shirt** — garment covering the upper body and arms  
+**shoe** — protective covering worn on the foot  
+**shorts** — trousers cut off above the knee  
+**shoulder** — joint connecting the arm to the body; also roadside verge  
+**shovel** — long-handled tool for digging and lifting loose material  
+**shower** — wash under sprayed water; also brief rainfall or a party  
+**shrimp** — small edible sea crustacean; also a very small person  
+**sidewalk** — paved walkway running beside a street  
+**sieve** — mesh utensil for straining liquids or sifting flour  
+**silk** — soft smooth fabric spun by silkworms  
+**silo** — tall tower storing grain; also an underground missile shelter  
+**silver** — shiny grey precious metal; also the second-place medal  
+**sink** — basin with drain and faucet; also to go under water  
+**skate** — boot with blades or wheels for gliding; also flat fish  
+**skillet** — heavy flat-bottomed frying pan  
+**skirt** — garment hanging from the waist; also to go around  
+**skull** — bony framework enclosing the head and brain  
+**skunk** — black and white mammal that sprays a foul odor  
+**sky** — the open expanse above the earth  
+**sled** — small vehicle for sliding downhill over snow  
+**sleeve** — part of a garment covering the arm; also record jacket  
+**slipper** — soft comfortable shoe worn indoors  
+**sloth** — slow tree-dwelling mammal of Central America; also extreme laziness  
+**smoke** — grey vapor rising from a fire; also to cure meat  
+**snail** — slow mollusk carrying a coiled shell on its back  
+**snake** — long legless reptile; also a treacherous, untrustworthy person  
+**sneaker** — soft rubber-soled shoe worn for sport  
+**snow** — white frozen flakes falling from winter clouds  
+**soap** — cleansing bar used for washing; also a daytime drama  
+**sock** — short garment worn on the foot; also to punch  
+**sofa** — long upholstered seat for several people  
+**soil** — top layer of earth where plants grow; also to dirty  
+**soldier** — member of an army who fights in war  
+**sorbet** — frozen fruit dessert made without dairy  
+**spade** — digging tool with a flat blade; also black card suit  
+**spark** — tiny glowing fleck thrown from fire; also to trigger something  
+**sparrow** — small brown songbird common in towns  
+**spatula** — flat kitchen tool for flipping or spreading  
+**spear** — long shaft with a pointed tip for throwing  
+**spider** — eight-legged arachnid that spins webs to catch prey  
+**spike** — sharp pointed metal rod; also a sudden steep increase  
+**spinach** — dark leafy green vegetable eaten raw or cooked  
+**sponge** — porous absorbent block for cleaning; also a sea animal  
+**spoon** — utensil with a shallow bowl for eating and stirring  
+**spring** — season following winter; also a metal coil or water source  
+**sprout** — young shoot rising from a seed; also small cabbage  
+**spruce** — evergreen conifer with short needles; also to tidy up  
+**square** — shape with four equal sides; also an open public plaza  
+**squid** — long soft sea creature with ten arms  
+**squirrel** — bushy-tailed tree rodent that hoards nuts; also to stash away  
+**stable** — building housing horses; also steady and unlikely to change  
+**stadium** — large arena with tiered seating for sports crowds  
+**stage** — raised platform for performers; also a phase or step  
+**stairs** — series of steps leading between floors  
+**stallion** — adult male horse kept for breeding  
+**stamp** — small sticker paying for postage; also to stomp the foot  
+**stapler** — device that fastens papers with metal staples  
+**star** — luminous body in the night sky; also a famous performer  
+**statue** — carved or cast figure of a person or animal  
+**steam** — hot vapor from boiling water; also energy or momentum  
+**steel** — strong alloy of iron and carbon; also to brace oneself  
+**steeple** — tall pointed tower rising from a church  
+**stem** — main stalk supporting a plant; also to stop a flow  
+**stick** — thin length of wood from a branch; also to adhere  
+**stone** — piece of rock; also a gem or a British weight  
+**stool** — backless seat with legs; also a bowel movement  
+**storm** — violent weather with wind and rain; also to attack angrily  
+**stove** — kitchen appliance with burners for cooking food  
+**straw** — dried stalks of harvested grain; also a tube for sipping  
+**stream** — small flowing watercourse; also online broadcasting of video  
+**street** — public road lined with houses and shops  
+**string** — thin cord used for tying; also a wire on instruments  
+**studio** — artist's or recording workroom; also a one-room apartment  
+**submarine** — vessel that travels underwater; also a long filled sandwich  
+**sugar** — sweet crystalline food made from cane or beet  
+**suitcase** — rectangular case for carrying clothes while traveling  
+**summit** — highest point of a mountain; also a meeting of leaders  
+**sun** — the star that lights and warms the earth  
+**surgeon** — doctor who performs operations on patients  
+**swallow** — small fast-flying bird with forked tail; also to gulp down  
+**swamp** — waterlogged low ground thick with trees; also to overwhelm  
+**swan** — large white water bird with a long neck  
+**sweater** — knitted garment worn over the upper body  
+**switch** — device that turns power on and off; also to change  
+**sword** — long-bladed weapon with a hilt and guard  
+**syringe** — tube with a plunger for injecting or drawing fluids  
+**syrup** — thick sweet liquid poured over pancakes and desserts  
+
+## T
+
+**table** — flat-topped furniture standing on legs; also a grid of data  
+**taco** — folded tortilla filled with meat and toppings  
+**tadpole** — larval stage of a frog, with tail and gills  
+**tail** — rear appendage of an animal; also to follow someone secretly  
+**tank** — armored tracked military vehicle; also a large liquid container  
+**tavern** — public house serving beer, drinks, and food  
+**taxi** — car hired with a driver; also a plane moving slowly  
+**teacher** — person who instructs students in a subject  
+**teapot** — lidded vessel for brewing and pouring tea  
+**telescope** — tube with lenses for viewing distant stars and objects  
+**temple** — building used for worship; also the flat side of forehead  
+**tent** — portable fabric shelter held up by poles  
+**termite** — pale wood-eating insect that damages buildings  
+**theater** — building where plays or films are shown; also operating room  
+**thermos** — insulated flask that keeps drinks hot or cold  
+**thicket** — dense tangle of bushes and small trees  
+**thief** — person who steals someone else's property  
+**thimble** — metal cap protecting a fingertip while sewing  
+**thorn** — sharp woody spike on a plant stem; also a persistent annoyance  
+**thread** — thin strand of spun fibre used for sewing; also a chain of messages  
+**throne** — ceremonial chair for a monarch; also royal power itself  
+**thumb** — short thick first digit of the hand; also to flip through pages  
+**thunder** — loud rumble heard after a lightning flash  
+**tiara** — small jeweled crown worn on the head  
+**tide** — daily rise and fall of the sea; also a turn in fortune  
+**tiger** — large striped orange big cat of Asia  
+**tile** — flat slab covering floors, walls, or roofs  
+**timber** — wood prepared for building; also a shout warning of a falling tree  
+**toast** — browned slice of bread; also a drink honoring someone  
+**toboggan** — long flat sled for sliding down snow  
+**tofu** — soft white curd pressed from soybeans  
+**tomato** — round red fruit eaten as a vegetable  
+**tomb** — burial chamber or grave monument for the dead  
+**tongue** — muscular organ in the mouth used for tasting; also a language  
+**tooth** — hard white biting structure set in the jaw; also a gear's point  
+**torch** — burning stick carried for light; also a British flashlight  
+**tornado** — violent spinning funnel of wind touching the ground  
+**toucan** — tropical bird with a huge colorful bill  
+**tower** — tall narrow building or structure; also to loom over something  
+**town** — settlement bigger than a village, smaller than a city  
+**track** — path or trail followed; also a song on an album  
+**tractor** — heavy farm vehicle built for pulling equipment  
+**train** — linked railway carriages pulled along tracks; also to practise a skill  
+**trap** — device for catching animals; also a hidden danger  
+**tray** — flat shallow board for carrying food or items  
+**treasure** — hoard of gold, jewels, or valuables; also to cherish  
+**tree** — tall woody plant with a trunk and branches; also a family chart  
+**triangle** — three-sided shape; also a small percussion instrument  
+**trombone** — brass instrument played with a sliding tube  
+**trophy** — cup or prize awarded to a winner  
+**trousers** — two-legged garment covering the lower body, pants  
+**trout** — speckled freshwater fish popular with anglers  
+**trowel** — small hand tool for digging or spreading mortar  
+**truck** — large road vehicle for hauling goods  
+**truffle** — prized underground fungus hunted by pigs; also a rich chocolate sweet  
+**trumpet** — brass instrument with three valves; also an elephant's loud call  
+**trunk** — main stem of a tree; also an elephant's nose or a car boot  
+**tube** — hollow cylinder for carrying liquid; also the London underground railway  
+**tulip** — bright cup-shaped spring flower grown from a bulb  
+**tundra** — treeless frozen plain of the far north  
+**tunnel** — underground passage cut through earth or rock  
+**turban** — long cloth wound around the head  
+**turbine** — bladed wheel spun by wind, steam, or water  
+**turkey** — large bird eaten at Thanksgiving; also a flop or three strikes  
+**turnip** — round white root vegetable  
+**turret** — small tower on a building; also a tank's rotating gun mount  
+**turtle** — reptile protected by a hard bony shell  
+**tusk** — long pointed tooth of an elephant or walrus  
+**tuxedo** — formal black suit worn to evening events  
+**tweezers** — small pincers for plucking tiny objects  
+**twig** — thin slender shoot growing from a branch  
+**typhoon** — tropical cyclone of the western Pacific  
+
+## U
+
+**ukulele** — small four-stringed guitar from Hawaii  
+**umbrella** — folding canopy carried against rain; also a broad covering category  
+**unicorn** — mythical white horse with a single horn; also a billion-dollar startup  
+
+## V
+
+**vacuum** — space empty of all matter; also a suction cleaning machine  
+**valley** — low ground lying between hills or mountains  
+**vampire** — undead creature that drinks the blood of the living  
+**vanilla** — fragrant flavouring from an orchid pod; also plain or ordinary  
+**vase** — decorative container for holding cut flowers  
+**vault** — secure strongroom for valuables; also to leap over something  
+**veil** — thin fabric covering the face or head  
+**velvet** — soft fabric with a dense short pile  
+**vest** — sleeveless garment worn over a shirt  
+**viking** — Norse seafaring raider of early medieval Europe  
+**village** — small rural settlement with few houses  
+**vine** — climbing plant with long trailing stems  
+**violin** — small four-stringed instrument played with a bow  
+**viper** — venomous snake with long hinged fangs  
+**volcano** — mountain that erupts lava, ash, and gas  
+**vulture** — bald scavenging bird that feeds on carrion  
+
+## W
+
+**waffle** — crisp batter cake with a grid pattern; also to talk vaguely  
+**wagon** — four-wheeled cart pulled by horses or oxen  
+**waiter** — person who serves food to restaurant customers  
+**wall** — upright structure enclosing or dividing space; also an obstacle  
+**walnut** — wrinkled edible nut; also its prized dark hardwood  
+**walrus** — huge arctic sea mammal with long tusks  
+**wand** — slender rod used by magicians and fairies  
+**wardrobe** — tall cupboard for hanging clothes; also a person's whole clothing collection  
+**warrior** — experienced fighter or soldier  
+**wasp** — stinging insect with a narrow yellow-banded body  
+**watch** — timepiece worn on the wrist; also to look at attentively  
+**waterfall** — stream of water falling over a cliff  
+**wave** — ridge of moving water on the sea; also a hand greeting  
+**wax** — soft moldable substance used in candles; also to grow larger  
+**weasel** — small slender carnivore that raids nests; also a sly person  
+**web** — silk net spun by a spider; also the internet  
+**whale** — huge ocean mammal that breathes through a blowhole  
+**wharf** — landing platform where ships load and unload  
+**wheat** — cereal grain milled into flour for bread  
+**wheel** — circular frame that turns on an axle; also a steering control  
+**whirlpool** — swirling circular current that pulls things down  
+**whisk** — wire kitchen tool for beating eggs; also to move swiftly off  
+**whistle** — shrill sound blown through the lips; also a small blowing device  
+**willow** — graceful tree with drooping branches beside water  
+**window** — glazed opening in a wall; also a span of opportunity  
+**wing** — limb a bird uses to fly; also a building's side section  
+**wire** — thin flexible metal strand carrying current; also a hidden recording device  
+**wizard** — man with magical powers; also an expert at something  
+**wolf** — wild pack-hunting relative of the dog  
+**wombat** — stocky burrowing Australian marsupial  
+**wood** — hard material cut from trees; also a small forest  
+**wool** — soft fleece fibre shorn from sheep  
+**workshop** — room for making or repairing things; also a training session  
+**worm** — long soft legless creature living in soil  
+**wreath** — ring of flowers or foliage hung as decoration  
+**wrench** — tool for gripping and turning nuts; also a sudden violent twist  
+**wrist** — joint connecting the hand to the forearm  
+
+## X
+
+**xylophone** — tuned wooden bars struck with small mallets  
+
+## Y
+
+**yacht** — sleek boat used for cruising or racing  
+**yak** — shaggy long-haired ox of the Himalayas  
+**yarn** — spun thread used for knitting; also a long rambling story  
+**yeti** — legendary ape-like snowman of the Himalayas  
+**yogurt** — thick tangy food made from fermented milk  
+
+## Z
+
+**zebra** — striped African relative of the horse; also a striped crossing  
+**zeppelin** — rigid airship built on a metal frame; also the band  
+**zipper** — sliding fastener with interlocking metal teeth  
+**zoo** — park where wild animals are kept on display  
+**zucchini** — long green summer squash, also called courgette  
