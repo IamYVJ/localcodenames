@@ -331,6 +331,8 @@ function wireLobby() {
   View.buildTimerControls();
   $('timer-off').addEventListener('click', () => setTimer({ enabled: false }));
   $('timer-on').addEventListener('click', () => setTimer({ enabled: true }));
+  $('guesses-exact').addEventListener('click', () => setGuesses(false));
+  $('guesses-plus').addEventListener('click', () => setGuesses(true));
 
   $('btn-start').addEventListener('click', () => {
     const res = app.host?.startGame();
@@ -353,6 +355,13 @@ function setMyRole(role) {
 function setTimer(patch) {
   if (app.mode !== 'host') return;
   const r = app.host.localSetTimer(patch);
+  if (r && !r.ok) UI.toast(r.error);
+}
+
+// host-only: likewise a room setting, fixed for the whole game
+function setGuesses(enabled) {
+  if (app.mode !== 'host') return;
+  const r = app.host.localSetGuesses(enabled);
   if (r && !r.ok) UI.toast(r.error);
 }
 

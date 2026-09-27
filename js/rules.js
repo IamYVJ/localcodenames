@@ -11,7 +11,7 @@
 // ===========================================================================
 
 import {
-  KEY_DISTRIBUTION, BOARD_SIZE, EXTRA_GUESS, UNLIMITED, CARD, TEAMS, REQUIRED, TIMER,
+  KEY_DISTRIBUTION, BOARD_SIZE, EXTRA_GUESS, UNLIMITED, CARD, TEAMS, REQUIRED, TIMER, GUESSES,
 } from './config.js';
 import { WORD_LIST } from './words.js';
 
@@ -44,6 +44,8 @@ export function createInitialState(roomCode, hostSeatId) {
     // Timer config lives at the top level so it survives a re-deal and a
     // return to the lobby — the host sets it once per room, not per game.
     timer: defaultTimerConfig(),
+    // Same reasoning: a room setting, not a per-game one.
+    extraGuess: defaultExtraGuess(),
     // Players the host has removed: [{ token, name }]. Lives in the state (not
     // just in memory) so a kick survives a host reload — otherwise resuming the
     // room would silently re-admit everyone the host just removed.
@@ -57,6 +59,10 @@ export function defaultTimerConfig() {
     clueSeconds: TIMER.clueSeconds,
     guessSeconds: TIMER.guessSeconds,
   };
+}
+
+export function defaultExtraGuess() {
+  return GUESSES.defaultExtra;
 }
 
 export function makeSeat(state, { token, name, spectator = false }) {
@@ -179,6 +185,17 @@ export function setTimerConfig(state, patch) {
     if (!TIMER.presets.includes(n)) return { ok: false, error: 'Bad timer length.' };
     t[field] = n;
   }
+  return { ok: true };
+}
+
+// Locked once play starts for the same reason the timer is: changing how many
+// guesses a clue buys, mid-turn, would retroactively rewrite the deal the
+// active team already committed to.
+export function setExtraGuess(state, enabled) {
+  if (state.phase !== 'lobby') {
+    return { ok: false, error: 'Guess settings are locked once the game starts.' };
+  }
+  state.extraGuess = !!enabled;
   return { ok: true };
 }
 
@@ -330,8 +347,10 @@ export function giveClue(state, token, payload) {
 
   game.clue = { word: v.word, count: v.count };
   game.guessesUsed = 0;
-  // Clue 0 or ∞ => unlimited guesses this turn. Otherwise number + 1.
-  game.guessesAllowed = (v.count === UNLIMITED || v.count === 0) ? UNLIMITED : v.count + EXTRA_GUESS;
+  // Clue 0 or ∞ => unlimited guesses this turn. Otherwise the clue number,
+  // plus the bonus guess if the host left it on.
+  const bonus = state.extraGuess ? EXTRA_GUESS : 0;
+  game.guessesAllowed = (v.count === UNLIMITED || v.count === 0) ? UNLIMITED : v.count + bonus;
   const shown = v.count === UNLIMITED ? '∞' : v.count;
   game.lastEvent = `${cap(seat.team)} Spymaster's clue: ${v.word.toUpperCase()} ${shown}.`;
   // Clue is in: swap the clue clock for the guess clock.
@@ -570,6 +589,7 @@ export function viewFor(state, token) {
     composition: teamComposition(state),
     canStart: canStart(state),
     timer: { ...state.timer },
+    extraGuess: !!state.extraGuess,
     you: seat ? {
       seatId: seat.seatId,
       name: seat.name,

@@ -68,6 +68,11 @@ export const GRID_COLS = 5;
 export const EXTRA_GUESS = 1;
 export const UNLIMITED = 'inf'; // sentinel for the ∞ clue option
 
+// Whether that bonus guess is on by default. The host flips this in the lobby:
+// off means a team gets exactly as many guesses as the clue number. Clue 0/∞
+// stays unlimited either way — that convention is not a "+1" rule.
+export const GUESSES = { defaultExtra: true };
+
 // --- Turn timer ----------------------------------------------------------
 // Off by default; the host turns it on in the lobby. Two separate clocks: one
 // while the Spymaster composes a clue, one while their Operatives guess.

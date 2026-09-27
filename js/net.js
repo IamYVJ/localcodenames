@@ -53,6 +53,7 @@ const T = {
   ADMIN_SET_ROLE: 'adminSetRole',
   ADMIN_KICK: 'adminKick',
   SET_TIMER: 'setTimer',
+  SET_GUESSES: 'setGuesses',
   START_CLOCK: 'startClock',
   SKIP_TURN: 'skipTurn',
   // host -> client: you have been removed. Distinct from ERR so the client can
@@ -97,6 +98,11 @@ export class HostNet {
       // Snapshots written before the timer / kick list existed lack the fields.
       if (!this.state.timer) this.state.timer = Rules.defaultTimerConfig();
       if (!Array.isArray(this.state.kicked)) this.state.kicked = [];
+      // Must test for the missing field, not its truthiness: a snapshot predating
+      // this setting would otherwise resume with the bonus guess silently off.
+      if (typeof this.state.extraGuess !== 'boolean') {
+        this.state.extraGuess = Rules.defaultExtraGuess();
+      }
       this.hostToken = opts.hostToken;
     } else {
       this.hostToken = opts.hostToken || Store.uuid();
@@ -336,7 +342,7 @@ export class HostNet {
     // Remote clients may never invoke host-only controls.
     if (msg.t === T.START || msg.t === T.AGAIN || msg.t === T.NEW_GAME
         || msg.t === T.ADMIN_SET_TEAM || msg.t === T.ADMIN_SET_ROLE
-        || msg.t === T.ADMIN_KICK || msg.t === T.SET_TIMER
+        || msg.t === T.ADMIN_KICK || msg.t === T.SET_TIMER || msg.t === T.SET_GUESSES
         || msg.t === T.START_CLOCK || msg.t === T.SKIP_TURN) {
       safeSend(conn, { t: T.ERR, m: 'Only the host can do that.' });
       return;
@@ -356,6 +362,7 @@ export class HostNet {
       case T.GUESS: res = Rules.guess(this.state, token, msg.index); break;
       case T.END_TURN: res = Rules.endTurn(this.state, token); break;
       case T.SET_TIMER: res = Rules.setTimerConfig(this.state, msg.patch); break;
+      case T.SET_GUESSES: res = Rules.setExtraGuess(this.state, msg.enabled); break;
       case T.START_CLOCK: res = Rules.startClock(this.state); break;
       case T.SKIP_TURN: res = Rules.skipTurn(this.state); break;
       default: return { ok: false, error: 'Unknown action.' };
@@ -375,6 +382,7 @@ export class HostNet {
   localGuess(index) { return this._apply(this.hostToken, { t: T.GUESS, index }); }
   localEndTurn() { return this._apply(this.hostToken, { t: T.END_TURN }); }
   localSetTimer(patch) { return this._apply(this.hostToken, { t: T.SET_TIMER, patch }); }
+  localSetGuesses(enabled) { return this._apply(this.hostToken, { t: T.SET_GUESSES, enabled }); }
   localStartClock() { return this._apply(this.hostToken, { t: T.START_CLOCK }); }
   localSkipTurn() { return this._apply(this.hostToken, { t: T.SKIP_TURN }); }
 

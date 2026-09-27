@@ -147,6 +147,12 @@
           </div>
         </div>
 
+        <p class="controls__label">Guesses per clue</p>
+        <div class="seg" role="group" aria-label="Guesses per clue">
+          <button id="guesses-exact" class="seg__btn" data-guesses="exact">Clue number</button>
+          <button id="guesses-plus" class="seg__btn" data-guesses="plus">Clue number + 1</button>
+        </div>
+
         <p id="start-help" class="controls__help"></p>
         <button id="btn-start" class="btn btn--primary">Start game</button>
       </section>
@@ -206,7 +212,7 @@
       <!-- Operative actions -->
       <section id="operative-panel" class="panel" hidden>
         <button id="btn-end-turn" class="btn btn--secondary">End turn</button>
-        <p class="panel__hint">Tap a card to guess. You get one extra guess beyond the clue number.</p>
+        <p id="operative-hint" class="panel__hint">Tap a card to guess.</p>
       </section>
 
       <!-- Passive waiting state -->

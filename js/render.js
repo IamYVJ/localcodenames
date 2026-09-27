@@ -292,6 +292,9 @@ function patchPanels(prev, next) {
 
     toggle(sm, showSpymaster);
     toggle(op, showOperative);
+    setText('operative-hint', next.extraGuess
+      ? 'Tap a card to guess. You get one extra guess beyond the clue number.'
+      : 'Tap a card to guess. You get exactly as many guesses as the clue number.');
 
     if (!showSpymaster && !showOperative) {
       show(wait);
@@ -398,6 +401,7 @@ export function renderRoster(view) {
     $('btn-start').disabled = !chk.ok;
     setText('start-help', chk.ok ? 'Ready when you are.' : chk.problems.join(' '));
     patchTimerControls(view.timer);
+    patchGuessControls(view.extraGuess);
   }
 
   // Reflect my current team/role on the segmented controls.
@@ -437,6 +441,11 @@ function patchTimerControls(t) {
     const want = String(t[group.dataset.timer]);
     for (const b of group.children) b.classList.toggle('seg__btn--on', b.dataset.secs === want);
   }
+}
+
+function patchGuessControls(extraGuess) {
+  $('guesses-exact').classList.toggle('seg__btn--on', !extraGuess);
+  $('guesses-plus').classList.toggle('seg__btn--on', !!extraGuess);
 }
 
 function buildRosterItem(p, isHost) {
