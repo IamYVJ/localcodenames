@@ -73,6 +73,21 @@ export const UNLIMITED = 'inf'; // sentinel for the ∞ clue option
 // stays unlimited either way — that convention is not a "+1" rule.
 export const GUESSES = { defaultExtra: true };
 
+// --- Word meanings -------------------------------------------------------
+// An accessibility/fairness aid, off by default: with it on, a player may
+// reveal the dictionary meaning of a board word. It is rationed because an
+// unlimited dictionary turns a guessing game into a research task — the point
+// is to rescue the one card nobody knows, not to decode the whole board.
+//
+// The allowance is PER PLAYER PER DEAL and counts distinct words, so re-reading
+// something you already unlocked is free. `limits` drives the lobby buttons, so
+// adding an option here is enough. UNLIMITED is the ∞ choice.
+export const MEANINGS = {
+  defaultEnabled: false,
+  defaultLimit: 1,
+  limits: [1, 2, 3, UNLIMITED],
+};
+
 // --- Turn timer ----------------------------------------------------------
 // Off by default; the host turns it on in the lobby. Two separate clocks: one
 // while the Spymaster composes a clue, one while their Operatives guess.

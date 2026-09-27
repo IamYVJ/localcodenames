@@ -12,6 +12,7 @@
 
 import {
   KEY_DISTRIBUTION, BOARD_SIZE, EXTRA_GUESS, UNLIMITED, CARD, TEAMS, REQUIRED, TIMER, GUESSES,
+  MEANINGS,
 } from './config.js';
 import { WORD_LIST } from './words.js';
 
@@ -46,6 +47,9 @@ export function createInitialState(roomCode, hostSeatId) {
     timer: defaultTimerConfig(),
     // Same reasoning: a room setting, not a per-game one.
     extraGuess: defaultExtraGuess(),
+    // Likewise. The per-player allowance it describes IS per-deal, but the
+    // setting that grants it belongs to the room — see dealGame().
+    meanings: defaultMeaningsConfig(),
     // Players the host has removed: [{ token, name }]. Lives in the state (not
     // just in memory) so a kick survives a host reload — otherwise resuming the
     // room would silently re-admit everyone the host just removed.
@@ -65,6 +69,19 @@ export function defaultExtraGuess() {
   return GUESSES.defaultExtra;
 }
 
+export function defaultMeaningsConfig() {
+  return { enabled: MEANINGS.defaultEnabled, limit: MEANINGS.defaultLimit };
+}
+
+// How many checks this seat has left. UNLIMITED stays UNLIMITED rather than
+// becoming a big number, so callers can render "∞" without a magic threshold.
+export function lookupsLeft(state, seat) {
+  const limit = state.meanings ? state.meanings.limit : 0;
+  if (limit === UNLIMITED) return UNLIMITED;
+  const used = Array.isArray(seat && seat.lookups) ? seat.lookups.length : 0;
+  return Math.max(0, Number(limit) - used);
+}
+
 export function makeSeat(state, { token, name, spectator = false }) {
   const seatId = `p${state.nextSeat++}`;
   const seat = {
@@ -79,6 +96,10 @@ export function makeSeat(state, { token, name, spectator = false }) {
     spectator: !!spectator,
     connected: true,
     lastSeen: Date.now(),
+    // Board indices whose meaning this player has unlocked this deal. Stored as
+    // indices, not words, because they are only ever meaningful against the
+    // current board — and dealGame() wipes them for exactly that reason.
+    lookups: [],
   };
   state.seats[token] = seat;
   return seat;
@@ -122,6 +143,10 @@ export function dealGame(state) {
   };
   state.phase = 'playing';
   state.game.clockPending = !!state.timer.enabled;
+  // Fresh board, fresh allowance. The stored indices point at the old deal's
+  // words, so carrying them over would both mis-render and wrongly bill people
+  // for checks they spent on a game that is finished.
+  for (const seat of Object.values(state.seats)) seat.lookups = [];
   return state;
 }
 
@@ -197,6 +222,66 @@ export function setExtraGuess(state, enabled) {
   }
   state.extraGuess = !!enabled;
   return { ok: true };
+}
+
+// Locked in the lobby like the others. Raising the allowance mid-game would be
+// harmless; lowering it could put a player retroactively over budget, and
+// there is no sensible way to un-tell them a meaning they have already read.
+export function setMeaningsConfig(state, patch) {
+  if (state.phase !== 'lobby') {
+    return { ok: false, error: 'Meaning settings are locked once the game starts.' };
+  }
+  if (!state.meanings) state.meanings = defaultMeaningsConfig();
+  const m = state.meanings;
+  if (patch.enabled !== undefined) m.enabled = !!patch.enabled;
+  if (patch.limit !== undefined) {
+    // Compare as strings so the UNLIMITED sentinel and the numeric presets can
+    // share one path without Number('inf') quietly becoming NaN.
+    const match = MEANINGS.limits.find((l) => String(l) === String(patch.limit));
+    if (match === undefined) return { ok: false, error: 'Bad meaning allowance.' };
+    m.limit = match;
+  }
+  return { ok: true };
+}
+
+// --- word meanings -------------------------------------------------------
+//
+// The host is the only authority on the allowance; the definition text itself
+// never travels. Every client already ships definitions.js, so the host records
+// WHICH indices a seat unlocked and each client renders its own text from that.
+// Keeping the payload to a list of small integers is what stops this feature
+// from putting 60 KB of dictionary on the wire on every state broadcast.
+//
+// Worth being clear-eyed: this rations a convenience, it does not protect a
+// secret. The dictionary is in the bundle on every device, so a player with
+// devtools can read any word's meaning without spending anything. That is fine
+// — it is a dictionary, not the key card.
+export function lookupMeaning(state, token, index) {
+  const seat = state.seats[token];
+  const game = state.game;
+  if (state.phase !== 'playing' || !game) return { ok: false, error: 'No active game.' };
+  if (!state.meanings || !state.meanings.enabled) {
+    return { ok: false, error: 'Word meanings are turned off for this room.' };
+  }
+  if (!seat) return { ok: false, error: 'No such seat.' };
+  if (seat.spectator) return { ok: false, error: 'Spectators cannot check meanings.' };
+  if (typeof index !== 'number' || !Number.isInteger(index) || index < 0 || index >= BOARD_SIZE) {
+    return { ok: false, error: 'Bad card.' };
+  }
+  if (game.revealed[index]) return { ok: false, error: 'That card is already revealed.' };
+
+  if (!Array.isArray(seat.lookups)) seat.lookups = [];
+  // Already unlocked — re-reading is free, and must not bill a second check.
+  if (seat.lookups.includes(index)) return { ok: true, word: game.words[index] };
+
+  if (lookupsLeft(state, seat) === 0) {
+    return { ok: false, error: 'You have used all your meaning checks.' };
+  }
+  seat.lookups.push(index);
+  // Deliberately NOT written to game.lastEvent: which word a player had to look
+  // up is a tell about what they don't know, and broadcasting it would make
+  // using the feature socially costly enough that nobody would.
+  return { ok: true, word: game.words[index] };
 }
 
 // --- composition validation ---------------------------------------------
@@ -590,6 +675,9 @@ export function viewFor(state, token) {
     canStart: canStart(state),
     timer: { ...state.timer },
     extraGuess: !!state.extraGuess,
+    // The room setting is public — everyone needs to know the feature exists
+    // and what it costs. What each player has actually spent is not.
+    meanings: { ...(state.meanings || defaultMeaningsConfig()) },
     you: seat ? {
       seatId: seat.seatId,
       name: seat.name,
@@ -598,6 +686,12 @@ export function viewFor(state, token) {
       spectator: !!seat.spectator,
       connected: seat.connected,
       isHost: seat.seatId === state.hostSeatId,
+      // Your own unlocked indices and remaining allowance, and nobody else's:
+      // `you` is built per recipient, so one player's lookups are never in
+      // another's payload. Checking a word tells the table you were unsure of
+      // it, and that should stay between the player and their own screen.
+      lookups: Array.isArray(seat.lookups) ? seat.lookups.slice() : [],
+      lookupsLeft: lookupsLeft(state, seat),
     } : null,
   };
   // The hidden key is attached ONLY for a Spymaster mid-game. A spectator's

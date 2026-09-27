@@ -122,6 +122,54 @@ export function closeConfirm() {
   if (openConfirm) openConfirm.settle(false);
 }
 
+// --- word meaning modal ---------------------------------------------------
+// Read-only sibling of confirm(): one button, nothing to decide. It does not
+// return a promise because no caller needs to know when it was dismissed.
+let closeMeaningFn = null;
+
+export function showMeaning({ word, definition, footer = '' }) {
+  const box = $('meaning');
+  if (!box) return;
+  closeMeaning(); // a second lookup supersedes the first
+
+  $('meaning-word').textContent = String(word || '').toUpperCase();
+  $('meaning-text').textContent = definition || 'No meaning on file for this word.';
+  const foot = $('meaning-left');
+  foot.textContent = footer;
+  foot.hidden = !footer;
+
+  const btn = $('meaning-close');
+  const prevFocus = document.activeElement;
+  box.hidden = false;
+
+  const done = () => {
+    closeMeaningFn = null;
+    box.hidden = true;
+    btn.removeEventListener('click', done);
+    box.removeEventListener('mousedown', onBackdrop);
+    document.removeEventListener('keydown', onKey, true);
+    try { prevFocus && prevFocus.focus && prevFocus.focus(); } catch { /* gone */ }
+  };
+  const onBackdrop = (e) => { if (e.target === box) done(); };
+  // Capture phase for the same reason confirm() uses it: the game screen binds
+  // its own key handlers and a modal has to swallow keys before they land.
+  const onKey = (e) => {
+    if (e.key === 'Escape') { e.preventDefault(); done(); return; }
+    // Only one focusable control, so Tab has nowhere to go but back to it.
+    if (e.key === 'Tab') { e.preventDefault(); btn.focus(); }
+  };
+
+  closeMeaningFn = done;
+  btn.addEventListener('click', done);
+  box.addEventListener('mousedown', onBackdrop);
+  document.addEventListener('keydown', onKey, true);
+  btn.focus();
+}
+
+export function closeMeaning() {
+  if (closeMeaningFn) closeMeaningFn();
+}
+
 // --- network status banner ----------------------------------------------
 // status: 'online' | 'connecting' | 'connected' | 'reconnecting' | 'hostgone'
 const STATUS_TEXT = {

@@ -11,6 +11,7 @@ import * as UI from './ui.js';
 import * as View from './render.js';
 import { keepAwake } from './wakelock.js';
 import { getHostState } from './storage.js';
+import { meaningOf } from './definitions.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -57,6 +58,8 @@ function boot() {
     onAdmin: doAdmin,
     onUnkick: doUnkick,
     onTimer: setTimer,
+    onMeanings: setMeanings,
+    onLookup: doLookup,
   });
 
   UI.showScreen('home');
@@ -244,6 +247,9 @@ function joinGame() {
     },
     onStatus: (s) => UI.setNetStatus(s),
     onError: (m) => {
+      // A rejected action may well be the meaning check we're waiting on. Drop
+      // the wait so a later, unrelated state update can't fire a stale modal.
+      pendingLookup = null;
       // While still on the join screen, surface inline; otherwise toast.
       if (app.screen === 'join') err.textContent = m;
       else UI.toast(m);
@@ -283,6 +289,16 @@ function joinGame() {
 // =========================================================================
 function handleView(view) {
   app.view = view;
+
+  // Settle a pending meaning check: the host records the spend in our own
+  // lookups, so its appearance there IS the confirmation.
+  if (pendingLookup !== null) {
+    const i = pendingLookup;
+    if (view.you && Array.isArray(view.you.lookups) && view.you.lookups.includes(i)) {
+      pendingLookup = null;
+      showMeaningFor(i, view);
+    }
+  }
 
   // A spectator's view is read-only; the `tv` body class drives the CSS that
   // hides player controls and enlarges the board for across-the-room viewing.
@@ -334,6 +350,10 @@ function wireLobby() {
   $('guesses-exact').addEventListener('click', () => setGuesses(false));
   $('guesses-plus').addEventListener('click', () => setGuesses(true));
 
+  View.buildMeaningControls();
+  $('meanings-off').addEventListener('click', () => setMeanings({ enabled: false }));
+  $('meanings-on').addEventListener('click', () => setMeanings({ enabled: true }));
+
   $('btn-start').addEventListener('click', () => {
     const res = app.host?.startGame();
     if (res && !res.ok) UI.toast(res.error);
@@ -355,6 +375,13 @@ function setMyRole(role) {
 function setTimer(patch) {
   if (app.mode !== 'host') return;
   const r = app.host.localSetTimer(patch);
+  if (r && !r.ok) UI.toast(r.error);
+}
+
+// host-only: whether players get the dictionary, and how much of it
+function setMeanings(patch) {
+  if (app.mode !== 'host') return;
+  const r = app.host.localSetMeanings(patch);
   if (r && !r.ok) UI.toast(r.error);
 }
 
@@ -436,6 +463,8 @@ function wireGame() {
     if (r && !r.ok) UI.toast(r.error);
   });
 
+  $('btn-meaning').addEventListener('click', () => View.setLookupMode(!View.isLookupMode()));
+
   $('btn-again').addEventListener('click', () => app.host?.playAgain());
   $('btn-newgame').addEventListener('click', () => app.host?.newGame());
 
@@ -495,6 +524,50 @@ async function submitClue() {
   wordEl.value = '';
   app.clueCount = 1;
   renderClueCount();
+}
+
+// =========================================================================
+// word meanings
+// =========================================================================
+//
+// The host owns the allowance, so a client must not render a definition until
+// the host confirms the spend — otherwise a rejected check still buys a free
+// peek. This holds the board index we asked about; handleView() settles it when
+// the index turns up in our own `you.lookups`.
+let pendingLookup = null;
+
+function doLookup(index) {
+  const view = app.view;
+  if (!view || !view.game) return;
+  const mine = view.you && Array.isArray(view.you.lookups) ? view.you.lookups : [];
+
+  // Already paid for — re-reading is free, so skip the round trip entirely.
+  if (mine.includes(index)) { showMeaningFor(index, view); return; }
+
+  if (app.mode === 'host') {
+    // The host applies locally and synchronously, and the resulting broadcast
+    // has already refreshed app.view by the time this returns.
+    const r = app.host.localLookup(index);
+    if (r && !r.ok) { UI.toast(r.error); return; }
+    showMeaningFor(index, app.view);
+    return;
+  }
+
+  pendingLookup = index;
+  app.client?.lookup(index);
+}
+
+function showMeaningFor(index, view) {
+  const word = view.game && view.game.words[index];
+  if (!word) return;
+  const left = view.you ? view.you.lookupsLeft : 0;
+  const footer = left === UNLIMITED
+    ? 'Unlimited checks.'
+    : `${left} check${Number(left) === 1 ? '' : 's'} left.`;
+  UI.showMeaning({ word, definition: meaningOf(word), footer });
+  // One tap, one meaning. Staying armed would leave the board in lookup mode
+  // into a turn where the player means to guess.
+  View.setLookupMode(false);
 }
 
 async function doGuess(index) {
@@ -562,6 +635,8 @@ function teardownNet() {
   // A prompt still on screen refers to a room that no longer exists — drop it,
   // and settle its promise so the awaiting caller unwinds instead of hanging.
   UI.closeConfirm();
+  UI.closeMeaning();
+  pendingLookup = null;
   // Nobody is in a room any more — stop holding the user's screen awake.
   keepAwake(false);
   try { app.host?.destroy(); } catch { /* ignore */ }

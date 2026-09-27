@@ -14,7 +14,7 @@
 //     never clobbered by a state update; focus and scroll are preserved.
 // ===========================================================================
 
-import { UNLIMITED, GRID_COLS, TIMER } from './config.js';
+import { UNLIMITED, GRID_COLS, TIMER, MEANINGS } from './config.js';
 import { cap } from './rules.js';
 
 const COLOR_CLASSES = ['card--red', 'card--blue', 'card--neutral', 'card--assassin'];
@@ -28,6 +28,11 @@ let handlers = {};
 let pendingView = null;
 let prevView = null;
 let frameQueued = false;
+
+// Client-local board mode. While on, a tap asks what a word MEANS instead of
+// guessing it. It lives here rather than in the view because it is a private UI
+// state — nothing about it should reach the host or the other players.
+let lookupMode = false;
 
 const $ = (id) => document.getElementById(id);
 
@@ -60,6 +65,10 @@ export function buildBoard() {
 
     btn.addEventListener('click', () => {
       if (btn.disabled) return;
+      // Lookup mode reuses the same 25 targets rather than adding a second
+      // control per card — on a phone there is no room for both, and a mode is
+      // easier to back out of than a mis-tapped icon.
+      if (lookupMode) { handlers.onLookup?.(i); return; }
       handlers.onGuess?.(i);
     });
 
@@ -149,7 +158,23 @@ export function applyState(prev, next) {
     }
 
     // Clickability (board DOM, so it lives here).
-    const clickable = canGuess && !revealed;
+    //
+    // In lookup mode the usual turn/role gate does not apply: the whole point
+    // is that an off-turn Spymaster, or an Operative waiting on the other team,
+    // can find out what a word means. Only "already revealed" still blocks,
+    // since a face-up card's meaning no longer matters.
+    //
+    // A word you already unlocked stays tappable even at zero allowance —
+    // re-reading costs nothing, so greying it out would be a lie.
+    const unlocked = !!(next.you && Array.isArray(next.you.lookups) && next.you.lookups.includes(i));
+    const hasBudget = next.you
+      && (next.you.lookupsLeft === UNLIMITED || Number(next.you.lookupsLeft) > 0);
+    const clickable = lookupMode
+      ? (lookupAvailable(next) && !revealed && (unlocked || hasBudget))
+      : (canGuess && !revealed);
+    // Marks the ones you have already paid for. Only while the mode is on, so
+    // it never adds noise to the board during normal play.
+    node.classList.toggle('card--known', lookupMode && unlocked && !revealed);
     if (node.disabled === clickable) { // disabled is the inverse of clickable
       node.disabled = !clickable;
     }
@@ -162,6 +187,32 @@ export function applyState(prev, next) {
     if (node.getAttribute('aria-label') !== label) node.setAttribute('aria-label', label);
   }
 }
+
+// Can this viewer use the meanings aid at all? Spectators are excluded the same
+// way they are from every other control: a TV has nobody sitting at it.
+function lookupAvailable(view) {
+  return !!(view && view.phase === 'playing' && view.game
+    && view.meanings && view.meanings.enabled
+    && view.you && !view.you.spectator);
+}
+
+// Enter/leave lookup mode. Exported because the mode is driven by a button in
+// main.js, but the board's clickability lives here.
+export function setLookupMode(on) {
+  const want = !!on;
+  if (want === lookupMode) return;
+  lookupMode = want;
+  $('board')?.classList.toggle('board--lookup', lookupMode);
+  // Re-run the two passes that read the mode. Passing prevView as both sides is
+  // safe: every mode-dependent branch below recomputes unconditionally, and the
+  // diff-guarded ones correctly no-op because nothing in the view changed.
+  if (prevView) {
+    if (boardBuilt && prevView.game) applyState(prevView, prevView);
+    patchPanels(prevView, prevView);
+  }
+}
+
+export function isLookupMode() { return lookupMode; }
 
 // =========================================================================
 // HUD (scores, turn, clue bar) — surgical text patches only
@@ -314,10 +365,54 @@ function patchPanels(prev, next) {
   // ever offered one turn action at a time.
   toggle($('host-turn'), hostPlaying && !held);
 
+  patchMeaningPanel(next);
+
   // aria-live announcement when the narrative event changes.
   if (ng && (!prev || !prev.game || prev.game.lastEvent !== ng.lastEvent)) {
     setText('live', ng.lastEvent || '');
   }
+}
+
+// The meanings aid: one button plus a running budget. Visible to every seated
+// player for the whole game, because the moment you need a definition is rarely
+// the moment it is your turn.
+function patchMeaningPanel(next) {
+  const available = lookupAvailable(next);
+  toggle($('meaning-panel'), available);
+  if (!available) {
+    // Leaving the mode armed while the panel is gone would strand the board in
+    // a state the player has no control to exit. Clear the flag directly rather
+    // than via setLookupMode(): we are already inside a render pass, and its
+    // re-render would re-patch the panels from the PREVIOUS view and undo the
+    // work this pass has just done.
+    //
+    // The board is safe for this frame either way — applyState ran first, and
+    // its lookup branch is gated on the same lookupAvailable() that just failed,
+    // so every card is already disabled.
+    if (lookupMode) {
+      lookupMode = false;
+      $('board')?.classList.toggle('board--lookup', false);
+    }
+    return;
+  }
+
+  const left = next.you.lookupsLeft;
+  const unlimited = left === UNLIMITED;
+  const used = Array.isArray(next.you.lookups) ? next.you.lookups.length : 0;
+  const spent = !unlimited && Number(left) <= 0;
+
+  const btn = $('btn-meaning');
+  btn.textContent = lookupMode ? 'Done' : 'Check a meaning';
+  btn.classList.toggle('btn--on', lookupMode);
+  // Only truly dead when there is nothing left to spend AND nothing to re-read.
+  btn.disabled = spent && used === 0;
+
+  let hint;
+  if (lookupMode) hint = 'Tap any face-down card to see what it means.';
+  else if (unlimited) hint = 'Unlimited checks.';
+  else if (spent) hint = used ? 'None left — you can still re-read yours.' : 'No checks left.';
+  else hint = `${left} of ${Number(left) + used} left.`;
+  setText('meaning-hint', hint);
 }
 
 function waitingMessage(ng, you) {
@@ -402,6 +497,7 @@ export function renderRoster(view) {
     setText('start-help', chk.ok ? 'Ready when you are.' : chk.problems.join(' '));
     patchTimerControls(view.timer);
     patchGuessControls(view.extraGuess);
+    patchMeaningControls(view.meanings);
   }
 
   // Reflect my current team/role on the segmented controls.
@@ -446,6 +542,37 @@ function patchTimerControls(t) {
 function patchGuessControls(extraGuess) {
   $('guesses-exact').classList.toggle('seg__btn--on', !extraGuess);
   $('guesses-plus').classList.toggle('seg__btn--on', !!extraGuess);
+}
+
+// One button per configured allowance, same pattern as the timer presets.
+let meaningsBuilt = false;
+
+export function buildMeaningControls() {
+  if (meaningsBuilt) return;
+  const group = $('meanings-limit-group');
+  if (!group) return;
+  for (const limit of MEANINGS.limits) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'seg__btn';
+    b.textContent = limit === UNLIMITED ? '∞' : String(limit);
+    // dataset stringifies anyway; being explicit keeps the compare below honest.
+    b.dataset.limit = String(limit);
+    b.addEventListener('click', () => handlers.onMeanings?.({ limit }));
+    group.appendChild(b);
+  }
+  meaningsBuilt = true;
+}
+
+function patchMeaningControls(m) {
+  if (!m) return;
+  $('meanings-off').classList.toggle('seg__btn--on', !m.enabled);
+  $('meanings-on').classList.toggle('seg__btn--on', !!m.enabled);
+  toggle($('meanings-limits'), !!m.enabled);
+  const group = $('meanings-limit-group');
+  if (!group) return;
+  const want = String(m.limit);
+  for (const b of group.children) b.classList.toggle('seg__btn--on', b.dataset.limit === want);
 }
 
 function buildRosterItem(p, isHost) {
@@ -573,6 +700,10 @@ export function resetRenderState() {
   prevView = null;
   pendingView = null;
   stopTimerTick();
+  // Client-local mode, so nothing else clears it: without this, leaving a room
+  // mid-lookup would arm the board in the next room the player joins.
+  lookupMode = false;
+  $('board')?.classList.remove('board--lookup');
   // Seat ids restart at p1 in every room, so these nodes would be reused by the
   // next room the user enters — carrying host-only admin buttons (and a title
   // naming a player from the previous room) into a room they don't host.

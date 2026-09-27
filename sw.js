@@ -11,7 +11,7 @@
 // each WebRTC handshake. After that, gameplay traffic is direct P2P on the LAN.
 // ===========================================================================
 
-const CACHE = 'codenames-v14';
+const CACHE = 'codenames-v15';
 
 // Local app shell (relative to this worker's location).
 const SHELL = [
@@ -22,6 +22,10 @@ const SHELL = [
   'js/main.js',
   'js/config.js',
   'js/words.js',
+  // ~60 KB, the single largest file in the shell. It is precached rather than
+  // fetched on demand because the meanings aid has to work on a LAN with no
+  // internet, which is the whole premise of this app.
+  'js/definitions.js',
   'js/rules.js',
   'js/storage.js',
   'js/net.js',

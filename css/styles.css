@@ -116,6 +116,9 @@ body {
 .btn--danger { background: var(--red); color: #FFF; font-weight: 700; }
 .btn--danger:hover:not(:disabled) { background: #EC6F68; }
 .btn--sm { width: auto; min-height: 36px; padding: 7px 14px; font-size: 0.8rem; }
+/* Latched state for a button that toggles a mode rather than firing an action
+   (the meanings lookup button). Filled = armed. */
+.btn--on { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 700; }
 
 .linkbtn {
   background: none; border: none; color: var(--accent);
@@ -474,6 +477,39 @@ body {
 .host-turn__hint {
   flex: 1; min-width: 160px; margin: 0;
   color: var(--muted-2); font-size: 0.78rem;
+}
+
+/* Word meanings aid. Same quiet treatment as .host-turn — it is an assist, not
+   a move, and must not compete with the active player's own action. */
+.meaning-panel {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  margin-top: 12px; padding: 10px 14px;
+  background: var(--surface); border: 1px dashed var(--line);
+  border-radius: var(--radius);
+}
+.meaning-panel__hint {
+  flex: 1; min-width: 160px; margin: 0;
+  color: var(--muted-2); font-size: 0.78rem;
+}
+/* .btn is width:100% by default; here it shares the row with the hint. */
+.meaning-panel .btn { width: auto; }
+
+/* Armed state, so a player can tell at a glance that a tap will explain a card
+   rather than reveal it. The board border is the loud part: it has to read from
+   across a tilted phone, because tapping in the wrong mode is the one mistake
+   this feature can cause. */
+.board--lookup {
+  outline: 2px dashed var(--accent-dim);
+  outline-offset: 6px;
+  border-radius: var(--radius-sm);
+}
+.board--lookup .card--live { cursor: help; }
+/* Already unlocked this deal: re-reading is free, so mark them apart from the
+   cards that would cost a check. */
+.card--known::after {
+  content: ''; position: absolute; top: 6px; right: 6px;
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--accent); opacity: 0.75;
 }
 
 .clue-compose { display: flex; gap: 10px; margin-bottom: 12px; }
