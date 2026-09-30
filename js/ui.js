@@ -217,6 +217,44 @@ export function hideNetStatus() {
   if (bar) { clearTimeout(bar._t); bar.hidden = true; }
 }
 
+// --- visitor footnote ----------------------------------------------------
+// Decorative "N visitors" line, read back from GoatCounter. Stays hidden on
+// every failure: adblocker, offline (a LAN-only game night is the normal case
+// here), a brand-new path with no data yet, or the "visitor counts" setting off.
+export function showVisitorCount() {
+  const box = document.querySelector('.visitor-counter');
+  const out = $('visitor-count');
+  if (!box || !out) return;
+
+  // Read the endpoint off the beacon tag so the site URL lives in one place.
+  const tag = document.querySelector('script[data-goatcounter]');
+  const endpoint = tag?.dataset.goatcounter;
+  if (!endpoint) return;
+
+  // This page's path only. Never /counter/TOTAL.json, which sums every project.
+  // pathname WITHOUT location.search, on purpose: count.js files a view under
+  // pathname + search, and a visitor who arrived with ?fbclid=… should still be
+  // shown the clean path's total rather than a 404.
+  const path = window.location.pathname;
+
+  // A fixed date before this project's first pageview. All-time is the default,
+  // so this doesn't change the count; it gives the response its own cache key,
+  // side-stepping a 404 that GoatCounter cached before any data existed.
+  const START = '2026-01-01';
+
+  fetch(`${endpoint.replace(/\/count$/, '')}/counter/${encodeURIComponent(path)}.json?start=${START}`)
+    .then((res) => (res.ok ? res.json() : Promise.reject(new Error('bad status'))))
+    .then((data) => {
+      // `count` is already a formatted string: render it as-is.
+      // GoatCounter caches this response for ~4h, so a fresh visit won't move it.
+      if (data && data.count != null) {
+        out.textContent = String(data.count);
+        box.hidden = false;
+      }
+    })
+    .catch(() => { /* decorative: stay hidden */ });
+}
+
 // --- clipboard -----------------------------------------------------------
 export async function copyText(text) {
   try {

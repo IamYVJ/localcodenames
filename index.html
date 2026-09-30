@@ -276,6 +276,15 @@
 
   </main>
 
+  <!-- Visitor footnote. Outside #app like the modals below: on a TV #app is a
+       full-height column whose leftover height belongs to the board. Stays
+       hidden unless UI.showVisitorCount() gets a real number back. -->
+  <footer class="site-foot">
+    <p class="visitor-counter" hidden>
+      <span id="visitor-count" class="visitor-count">—</span> visitors
+    </p>
+  </footer>
+
   <!-- In-app confirmation, replacing window.confirm(). Lives outside #app so it
        is never touched by the renderer's board patching and never inherits TV
        layout. Driven by UI.confirm() in js/ui.js. -->
@@ -316,5 +325,13 @@
        even though the app shell itself is cached for offline loading. -->
   <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
   <script type="module" src="./js/main.js"></script>
+
+  <!-- GoatCounter pageview beacon. One site shared across all projects on purpose:
+       counts are per-path, so each project is separated by its own pathname.
+       sw.js lets it straight through to the network so it is never cached. -->
+  <script
+    data-goatcounter="https://yvj.goatcounter.com/count"
+    async
+    src="//gc.zgo.at/count.js"></script>
 </body>
 </html>

@@ -627,6 +627,26 @@ body {
 .modal__actions .btn { flex: 1; width: auto; }
 .modal__card--danger .modal__title { color: var(--red); }
 
+/* --- visitor footnote ----------------------------------------------------
+   Fine print below #app, in the same small mono caps as the in-game room code.
+   No `display` on .visitor-counter: it would override the `hidden` attribute
+   and show a bare "— visitors" to anyone whose adblocker blocks GoatCounter.
+   The spacing lives on it rather than on .site-foot, so a hidden counter
+   leaves nothing behind. */
+.visitor-counter {
+  margin: 0 0 24px;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted-2);
+  text-align: center;
+}
+.visitor-count {
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
+
 /* =========================================================================
    TV / SPECTATOR mode
    A read-only seat (a TV across the room). It shows ONLY public information —
@@ -658,6 +678,8 @@ body {
 .tv #waiting-panel,
 .tv #host-turn,
 .tv #clock-gate { display: none !important; }
+/* Nor fine print: it would only sit below the fold of a screen nobody scrolls. */
+.tv .site-foot { display: none; }
 
 /* Bigger HUD so scores / turn / clue read across a room. */
 .tv .chip { font-size: 1.4rem; padding: 9px 18px; }

@@ -11,7 +11,7 @@
 // each WebRTC handshake. After that, gameplay traffic is direct P2P on the LAN.
 // ===========================================================================
 
-const CACHE = 'codenames-v15';
+const CACHE = 'codenames-v16';
 
 // Local app shell (relative to this worker's location).
 const SHELL = [
@@ -87,6 +87,12 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const req = event.request;
   if (req.method !== 'GET') return;
+  // GoatCounter beacon + counter read-back: never cached, never respondWith().
+  // A beacon answered from cache records nothing; an offline load just goes uncounted.
+  // cacheFirst() wouldn't store these hosts, but it still answers every GET, so
+  // they have to be let through here rather than left to CACHEABLE_HOSTS.
+  const url = new URL(req.url);
+  if (url.hostname === 'gc.zgo.at' || url.hostname.endsWith('.goatcounter.com')) return;
   event.respondWith(cacheFirst(req));
 });
 

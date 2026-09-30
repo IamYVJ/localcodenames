@@ -32,6 +32,9 @@ const app = {
 // =========================================================================
 function boot() {
   registerServiceWorker();
+  // Safe to call directly: a module runs only after the whole document is
+  // parsed, so the beacon tag at the end of <body> is already in the DOM.
+  UI.showVisitorCount();
 
   // Restore remembered name.
   const name = Store.getName();
